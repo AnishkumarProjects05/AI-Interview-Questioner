@@ -11,7 +11,7 @@ import { supabase } from '@/services/supabaseClient';
 // Helper function to get the appropriate icon and color based on question type
 const getTypeDesign = (type) => {
     // Normalize type for consistent matching
-    const normalizedType = (type || '').toLowerCase(); 
+    const normalizedType = (type || '').toLowerCase();
 
     if (normalizedType.includes('behavioral')) {
         return {
@@ -48,12 +48,12 @@ const getTypeDesign = (type) => {
     }
 };
 
-function QuestionList({ formData }) {
+function QuestionList({ formData, onCreateLink }) {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [questionList, setQuestionList] = useState([]);
 
-    const {user} = useUser();
+    const { user } = useUser();
     useEffect(() => {
         if (formData) {
             GenerateQuestions();
@@ -74,6 +74,8 @@ function QuestionList({ formData }) {
                 userEmail: user?.email ?? null,
                 interview_id,
             };
+            console.log(interview_id);
+
             const { error } = await supabase.from('Interviews').insert([payload]);
             if (error) {
                 console.error(error);
@@ -81,6 +83,7 @@ function QuestionList({ formData }) {
                 return;
             }
             toast('Saved in Database Successfully');
+            onCreateLink(interview_id);
         } catch (error) {
             console.error(error);
             toast('Server Error: Failed to save interview.');
@@ -101,7 +104,7 @@ function QuestionList({ formData }) {
 
             const parseJsonLoose = (text) => {
                 // ... (your existing robust JSON parsing logic) ...
-                try { return JSON.parse(text); } catch {}
+                try { return JSON.parse(text); } catch { }
                 const matchList = text.match(/interviewQuestions\s*=\s*(\[[\s\S]*\])/i);
                 if (matchList?.[1]) {
                     return JSON.parse(matchList[1]);
@@ -110,13 +113,13 @@ function QuestionList({ formData }) {
                 const aEnd = text.lastIndexOf(']');
                 if (aStart !== -1 && aEnd > aStart) {
                     const arrSlice = text.slice(aStart, aEnd + 1);
-                    try { return JSON.parse(arrSlice); } catch {}
+                    try { return JSON.parse(arrSlice); } catch { }
                 }
                 const oStart = text.indexOf('{');
                 const oEnd = text.lastIndexOf('}');
                 if (oStart !== -1 && oEnd > oStart) {
                     const objSlice = text.slice(oStart, oEnd + 1);
-                    try { return JSON.parse(objSlice); } catch {}
+                    try { return JSON.parse(objSlice); } catch { }
                 }
                 throw new Error('Unable to parse JSON response');
             };
@@ -128,7 +131,7 @@ function QuestionList({ formData }) {
                 question: q.question || q, // Handle cases where the item might be just the question string
                 type: q.type || 'General' // Default type if missing
             }));
-            
+
             setQuestionList(formattedQuestions);
         } catch (error) {
             console.error(error);
@@ -157,17 +160,17 @@ function QuestionList({ formData }) {
                     <QuestionListContainer questionList={questionList} />
                     <div>
                         <Button onClick={onFinish} disabled={saving}>
-                            {saving ? 'Saving...' : 'Finish'}
+                            {saving ? 'Saving...' : 'Generate Interview & Finish'}
                         </Button>
                     </div>
                 </div>
-                
+
             )}
-            
-            
+
+
             {/* Optional: Empty state if no questions were generated */}
             {!loading && questionList?.length === 0 && (
-                 <div className="p-6 bg-red-50 rounded-2xl border border-red-200 shadow-md flex gap-4 items-center">
+                <div className="p-6 bg-red-50 rounded-2xl border border-red-200 shadow-md flex gap-4 items-center">
                     <h2 className="text-lg font-semibold text-red-700">No Questions Generated</h2>
                     <p className="text-sm text-red-500">Please check your input data and try again.</p>
                 </div>

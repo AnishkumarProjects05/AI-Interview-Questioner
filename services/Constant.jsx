@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, Calendar, CodeIcon, LayoutDashboard, List, Puzzle, User, User2Icon, WalletCards } from "lucide-react";
+import { BriefcaseBusiness, Calendar, CodeIcon,  DockIcon, LayoutDashboard, List, Puzzle, User, User2Icon, WalletCards } from "lucide-react";
 
 export const SideBarOptions = [
     {
@@ -17,9 +17,9 @@ export const SideBarOptions = [
         path:"/all-interviews"
     },
     {
-        name:"Billings",
-        icon:WalletCards,
-        path:"/billings"
+        name:"ATS Tracker",
+        icon:DockIcon,
+        path:"/ats-tracker"
         
     }
 ]

@@ -9,104 +9,142 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { InterviewType } from '@/services/Constant'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Briefcase, Clock, FileText, Sparkles } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
-function FormContainer({ onHandleInputChange , GoToNext }) {
-    // State to handle the selected Interview Type for demonstration
+function FormContainer({ onHandleInputChange, GoToNext }) {
+    // State to handle the selected Interview Type
     const [selectedType, setSelectedType] = useState([]);
 
-    useEffect(()=>{
-        onHandleInputChange('type',selectedType);
+    useEffect(() => {
+        onHandleInputChange('type', selectedType);
+    }, [selectedType])
 
-    },[selectedType])
-
-    const addInterviewType = (type)=>{
-        if(!selectedType.includes(type)){
-            // If not selected, add it
-            setSelectedType(prev=>[...prev,type]);
-        }
-        else{
-            // If already selected, remove it (toggle off)
-            const result = selectedType.filter(item=>item !== type);
+    const addInterviewType = (type) => {
+        if (!selectedType.includes(type)) {
+            setSelectedType(prev => [...prev, type]);
+        } else {
+            const result = selectedType.filter(item => item !== type);
             setSelectedType(result);
         }
     }
-    // Define the primary green color for reuse
-    const primaryGreen = 'border-emerald-600 text-emerald-600 hover:bg-emerald-50';
-    const activeGreen = 'bg-emerald-600 text-white';
 
     return (
-        <div className='p-6 bg-white rounded-xl shadow-lg border border-gray-100'> {/* White background, subtle shadow and border */}
-            <h1 className='text-2xl font-extrabold text-gray-800 mb-6'>Interview Configuration</h1>
-            <div className='space-y-6'>
-                {/* Job Position Input */}
-                <div className=''>
-                    <h2 className='font-bold font-sans text-sm text-gray-700 mb-2'>Job Position</h2>
-                    <Input 
-                        placeholder="Enter the Job Position (E.g. Software Engineer)" 
-                        className={`p-3 border-gray-300 focus:border-emerald-600 focus:ring-emerald-600`} // Emerald focus
-                        type={undefined}
-                        onChange={(event)=>onHandleInputChange('jobPosition',event.target.value)}
+        <div className='bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'>
+            
+            {/* Header Section */}
+            <div className='bg-emerald-50/50 p-6 border-b border-gray-100'>
+                <div className='flex items-center gap-2 mb-1'>
+                    <div className='p-2 bg-emerald-100 rounded-lg text-emerald-600'>
+                        <Sparkles className='w-5 h-5' />
+                    </div>
+                    <h1 className='text-xl font-bold text-gray-800'>Interview Details</h1>
+                </div>
+                <p className='text-gray-500 text-sm ml-11'>
+                    Configure the role and scope to generate the perfect AI questions.
+                </p>
+            </div>
+
+            <div className='p-6 space-y-8'>
+                
+                {/* Job Details Section */}
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                    
+                    {/* Job Position */}
+                    <div className='space-y-2'>
+                        <label className='flex items-center gap-2 text-sm font-semibold text-gray-700'>
+                            <Briefcase className='w-4 h-4 text-emerald-500' />
+                            Job Role / Position
+                        </label>
+                        <Input
+                            placeholder="Ex. Senior React Developer"
+                            className="h-11 bg-gray-50 border-gray-200 focus:bg-white focus:border-emerald-500 focus:ring-emerald-500 transition-all"
+                            onChange={(event) => onHandleInputChange('jobPosition', event.target.value)}
+                        />
+                    </div>
+
+                    {/* Duration */}
+                    <div className='space-y-2'>
+                        <label className='flex items-center gap-2 text-sm font-semibold text-gray-700'>
+                            <Clock className='w-4 h-4 text-emerald-500' />
+                            Duration
+                        </label>
+                        <Select onValueChange={(value) => onHandleInputChange('duration', value)}>
+                            <SelectTrigger className="h-11 bg-gray-50 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500">
+                                <SelectValue placeholder="Select Duration" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="5">5 Minutes (Short)</SelectItem>
+                                <SelectItem value="15">15 Minutes (Standard)</SelectItem>
+                                <SelectItem value="30">30 Minutes (Deep Dive)</SelectItem>
+                                <SelectItem value="60">60 Minutes (Full Round)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                {/* Description */}
+                <div className='space-y-2'>
+                    <label className='flex items-center gap-2 text-sm font-semibold text-gray-700'>
+                        <FileText className='w-4 h-4 text-emerald-500' />
+                        Job Description & Requirements
+                    </label>
+                    <Textarea
+                        placeholder="Paste the JD here. Include tech stack, years of experience, and key responsibilities..."
+                        className="min-h-[150px] bg-gray-50 border-gray-200 focus:bg-white focus:border-emerald-500 focus:ring-emerald-500 transition-all resize-none"
+                        onChange={(event) => onHandleInputChange('jobDescription', event.target.value)}
                     />
                 </div>
 
-                {/* Job Description Textarea */}
-                <div className=''>
-                    <h2 className='font-bold font-sans text-sm text-gray-700 mb-2'>Job Description</h2>
-                    <Textarea 
-                        placeholder="Enter the Job Description" 
-                        className={`p-3 h-[200px] border-gray-300 focus:border-emerald-600 focus:ring-emerald-600`} // Emerald focus
-                        type={undefined}
-                        onChange={(event)=>onHandleInputChange('jobDescription',event.target.value)}
-                    />
-                </div>
-
-                {/* Interview Duration Select */}
-                <div className=''>
-                    <h2 className='font-bold font-sans text-sm text-gray-700 mb-2'>Interview Duration</h2>
-                    <Select onValueChange={(value) => onHandleInputChange('duration', value)}>
-                        <SelectTrigger className={`w-full p-3 border-gray-300 focus:border-emerald-600 focus:ring-emerald-600 [&>span]:text-gray-700`}>
-                            <SelectValue placeholder="Select Duration" />
-                        </SelectTrigger>
-                        <SelectContent className='bg-white border-gray-300'>
-                            <SelectItem value="5">5 Minutes</SelectItem>
-                            <SelectItem value="15">15 minutes</SelectItem>
-                            <SelectItem value="30">30 minutes</SelectItem>
-                            <SelectItem value="60">60 minutes</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {/* Interview Type Selection (Green/White Contrast) */}
-                <div className=''>
-                    <h2 className='font-bold font-sans text-sm text-gray-700 mb-3'>Interview Type</h2>
-                    <div className='flex gap-3 flex-wrap'>
+                {/* Interview Type Selector (Grid Design) */}
+                <div className='space-y-3'>
+                    <label className='text-sm font-semibold text-gray-700'>
+                        Focus Areas <span className='text-gray-400 font-normal ml-1'>(Select all that apply)</span>
+                    </label>
+                    
+                    <div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
                         {InterviewType.map((type, index) => {
                             const isActive = selectedType.includes(type.title);
                             return (
-                                <div 
-                                    key={index} 
-                                    className={`flex items-center cursor-pointer gap-2 px-4 py-2 border rounded-full transition-all duration-200 
-                                                ${isActive 
-                                                    ? activeGreen // Deep Green background, White text
-                                                    : primaryGreen // Green border, Green text, White background on hover
-                                                }`}
-                                    onClick={() => addInterviewType(type.title)} // Handle selection
+                                <div
+                                    key={index}
+                                    onClick={() => addInterviewType(type.title)}
+                                    className={`
+                                        cursor-pointer relative p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center justify-center gap-2 text-center group
+                                        ${isActive 
+                                            ? 'border-emerald-500 bg-emerald-50/50 shadow-sm' 
+                                            : 'border-gray-100 bg-white hover:border-emerald-200 hover:bg-gray-50'
+                                        }
+                                    `}
                                 >
-                                    {/* Icon color changes based on active state */}
-                                    <type.icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-emerald-600'}`}/>
-                                    <span className='font-medium'>{type.title}</span>
+                                    <div className={`p-2 rounded-full transition-colors ${isActive ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-500 group-hover:text-emerald-500'}`}>
+                                        <type.icon className="h-5 w-5" />
+                                    </div>
+                                    <span className={`text-sm font-medium ${isActive ? 'text-emerald-900' : 'text-gray-600'}`}>
+                                        {type.title}
+                                    </span>
+                                    
+                                    {/* Active Checkmark Badge */}
+                                    {isActive && (
+                                        <div className='absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse' />
+                                    )}
                                 </div>
                             );
                         })}
                     </div>
                 </div>
+
+                {/* Action Button */}
+                <div className='pt-4'>
+                    <Button 
+                        className='w-full h-12 text-lg bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all hover:scale-[1.01]' 
+                        onClick={() => GoToNext()}
+                    >
+                        Start Generating Questions <ArrowRight className='ml-2 w-5 h-5' />
+                    </Button>
+                </div>
+
             </div>
-            
-            {/* Example: A Call-to-Action button using the primary green */}
-            <button className='w-full mt-8 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors duration-200 shadow-md shadow-emerald-200' onClick={()=>GoToNext()}>
-                Generate Question 
-            </button>
         </div>
     )
 }
