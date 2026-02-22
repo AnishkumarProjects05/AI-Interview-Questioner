@@ -100,6 +100,7 @@ function QuestionList({ formData, onCreateLink }) {
             });
             // API returns content as text; clean and parse defensively
             const raw = result.data?.content ?? '';
+            console.log("Raw content from AI:", raw);
             const cleaned = raw.replace(/```json|```/g, '').trim();
 
             const parseJsonLoose = (text) => {
@@ -135,7 +136,13 @@ function QuestionList({ formData, onCreateLink }) {
             setQuestionList(formattedQuestions);
         } catch (error) {
             console.error(error);
-            toast('Server Error: Failed to generate questions. Try again later.');
+            if (error.response?.status === 429) {
+                toast('Rate limit reached. Please wait a moment and try again.');
+            } else if (error.response?.status === 402) {
+                toast('AI Credit Issue: Please switch back to a free model or check your credits.');
+            } else {
+                toast('Server Error: Failed to generate questions. Try again later.');
+            }
         } finally {
             setLoading(false);
         }

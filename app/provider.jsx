@@ -3,17 +3,17 @@
 import { useState, useEffect } from 'react'
 import React from 'react'
 import { supabase } from '@/services/supabaseClient'
-import {useContext } from 'react';
+import { useContext } from 'react';
 import UserDetailContext from '@/context/UserDetailContext';
 
 
-function Provider({children}) {
-    const [user,setUser] = useState(null);
+function Provider({ children }) {
+    const [user, setUser] = useState(null);
 
-    useEffect(()=>{
+    useEffect(() => {
         CreateNewUser();
     }, [])   // run once on mount
-    
+
     // Build a safe row so we don't insert nulls when metadata keys differ by provider
     const mapAuthUserToRow = (authUser) => {
         if (!authUser) return { name: null, email: null, picture: null };
@@ -38,10 +38,10 @@ function Provider({children}) {
             picture,
         };
         console.log(name);
-    
+
     };
 
-    const CreateNewUser = async () =>{
+    const CreateNewUser = async () => {
         const { data: authData, error: authError } = await supabase.auth.getUser();
         if (authError) {
             console.error("Auth error:", authError);
@@ -56,7 +56,7 @@ function Provider({children}) {
 
         const userRow = mapAuthUserToRow(authUser);
 
-        const {data: Users, error } = await supabase
+        const { data: Users, error } = await supabase
             .from('Users')
             .select('*')
             .eq('email', userRow.email);
@@ -66,36 +66,38 @@ function Provider({children}) {
             return;
         }
 
-        if(Users?.length === 0){
+        if (Users?.length === 0) {
             console.log('Creating New User');
-            const {data, error: insertError} = await supabase.from('Users')
+            const { data, error: insertError } = await supabase.from('Users')
                 .insert([userRow])
                 .select()
                 .single();
-                
+
             if (insertError) {
                 console.error("Insert user error:", insertError);
                 return;
             }
 
+            console.log("New user created and set:", data);
             setUser(data);
             return;
         }
 
+        console.log("Existing user fetched and set:", Users[0]);
         setUser(Users[0]);
     }
 
-  return (
-    <UserDetailContext.Provider value = {{user,setUser}}>
-        <div>{children}</div>
-    </UserDetailContext.Provider>
-    
-  )
+    return (
+        <UserDetailContext.Provider value={{ user, setUser }}>
+            <div>{children}</div>
+        </UserDetailContext.Provider>
+
+    )
 }
 
 export default Provider
 
-export const useUser = () =>{
+export const useUser = () => {
     const context = useContext(UserDetailContext);
     return context;
 }

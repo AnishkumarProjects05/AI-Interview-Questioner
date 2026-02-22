@@ -1,50 +1,50 @@
-import { BriefcaseBusiness, Calendar, CodeIcon,  DockIcon, LayoutDashboard, List, Puzzle, User, User2Icon, WalletCards } from "lucide-react";
+import { BriefcaseBusiness, Calendar, CodeIcon, DockIcon, LayoutDashboard, List, Puzzle, User, User2Icon, WalletCards } from "lucide-react";
 
 export const SideBarOptions = [
     {
         name: "Dashboard",
-        icon:LayoutDashboard,
-        path:"/dashboard"
+        icon: LayoutDashboard,
+        path: "/dashboard"
     },
     {
-        name : "Schedule Interview",
+        name: "Schedule Interview",
         icon: Calendar,
-        path:"/schedule-interview"
+        path: "/schedule-interview"
     },
     {
-        name:"Interview History",
-        icon:List,
-        path:"/all-interviews"
+        name: "Interview History",
+        icon: List,
+        path: "/all-interviews"
     },
     {
-        name:"ATS Tracker",
-        icon:DockIcon,
-        path:"/ats-tracker"
-        
+        name: "Resume-JD Analyzer",
+        icon: DockIcon,
+        path: "/resume-jd-analyzer"
+
     }
 ]
 
-export const  InterviewType = [
+export const InterviewType = [
     {
-        title:'Technical',
-        icon:CodeIcon
+        title: 'Technical',
+        icon: CodeIcon
     },
     {
-        title:'Behaviour',
-        icon:User2Icon
+        title: 'Behaviour',
+        icon: User2Icon
     },
     {
-        title:'Experience',
-        icon:BriefcaseBusiness
+        title: 'Experience',
+        icon: BriefcaseBusiness
 
     },
     {
-        title:'Problem Solving',
-        icon:Puzzle
+        title: 'Problem Solving',
+        icon: Puzzle
     }
 ]
 
-export const QUESTION_PROMPT =  `You are an expert technical interviewer.
+export const QUESTION_PROMPT = `You are an expert technical interviewer.
 Based on the following inputs, generate a well-structured list of high-quality interview questions:
 
 Job Title: {{jobTitle}}
