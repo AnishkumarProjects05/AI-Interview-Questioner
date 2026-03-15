@@ -7,28 +7,28 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 function StartInterviewPage() {
-    const { interviewInfo,setInterviewInfo } = useContext(InterviewDataContext);
+    const { interviewInfo, setInterviewInfo } = useContext(InterviewDataContext);
     const [isMuted, setIsMuted] = useState(false);
     const [time, setTime] = useState(0);
     const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_API_KEY);
-   
+
 
     // Simple timer logic
     useEffect(() => {
         const interval = setInterval(() => {
             setTime(prev => prev + 1);
         }, 1000);
-       
+
         return () => clearInterval(interval);
     }, []);
     useEffect(() => {
         startCall();
     }, [interviewInfo]);
-     const startCall = () =>{
+    const startCall = () => {
         let questionList;
-        interviewInfo?.interviewData?.questionList.forEach((item,index) => {
-            questionList =item?.question + ',' + questionList;
-            
+        interviewInfo?.interviewData?.questionList.forEach((item, index) => {
+            questionList = item?.question + ',' + questionList;
+
         });
         console.log(questionList);
     }
