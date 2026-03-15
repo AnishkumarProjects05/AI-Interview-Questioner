@@ -86,7 +86,7 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
                 {/* Description */}
                 <div className='space-y-2'>
                     <label className='flex items-center gap-2 text-sm font-semibold text-gray-700'>
-                        <FileText className='w- 4 h-4 text-emerald-500' />
+                        <FileText className='w- 4 h-4 text-emerald-500' />              
                         Job Description & Requirements
                     </label>
                     <Textarea

@@ -30,7 +30,7 @@ function CreateInterview() {
     setinterviewId(interview_id);
     setStep(step + 1);
     console.log(interview_id);
-
+        
   }
   return (
     <div className='mt-10 px-10 lg:px-44 xl:px-56'>

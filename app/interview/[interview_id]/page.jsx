@@ -59,7 +59,7 @@ function InterviewPage() {
         console.log(Interviews[0]);
         setInterviewInfo({
             userName: user?.name,
-            questionlist:Interviews[0]
+            questionlist: Interviews[0]
         });
         router.push('/interview/' + interview_id + '/start');
         setLoading(false);
@@ -93,17 +93,17 @@ function InterviewPage() {
                 <h2 className="text-xl font-semibold text-gray-700">
                     Welcome to Vapi AI Mock Interview, {user?.name || "Candidate"}
                 </h2>
-                <div className="mt-4 text-left text-gray-500 space-y-2">
+                <div className="mt-4 text-left text-gray-500 space-y-2 ml-14">
                     <li className="list-disc text-blue-900">Ensure You Have Good Network Connection</li>
                     <li className="list-disc text-blue-900">Ensure You Have Good Microphone</li>
                     <li className="list-disc text-blue-900">Ensure You Have Good Camera</li>
-                    <li className="list-disc text-blue-900">Ensure You Have Good Headphone</li>
+
                 </div>
             </div>
 
             <Button className="flex flex-row gap-3 mt-6"
                 onClick={onJoinInterview}>
-                <Video /> {loading&&<Loader2/>}Start Interview
+                <Video /> {loading && <Loader2 />}Start Interview
             </Button>
         </div>
     )

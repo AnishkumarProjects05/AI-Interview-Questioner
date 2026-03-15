@@ -65,7 +65,8 @@ function QuestionListContainer({questionList}) {
                   <Icon className="w-3 h-3 mr-1" />
                   <span>Type: {label}</span>
                 </div>
-              </div>
+              </div>   
+              
             </div>
           );
         })}

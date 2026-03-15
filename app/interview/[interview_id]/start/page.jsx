@@ -1,22 +1,37 @@
 "use client"
 import React, { useContext, useState, useEffect } from "react";
+import Vapi from '@vapi-ai/web';
 import { InterviewDataContext } from "@/context/InterviewDataContext";
 import { Timer, Mic, PhoneOff, Video, MicOff, MoreVertical } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 function StartInterviewPage() {
-    const { interviewInfo } = useContext(InterviewDataContext);
+    const { interviewInfo,setInterviewInfo } = useContext(InterviewDataContext);
     const [isMuted, setIsMuted] = useState(false);
     const [time, setTime] = useState(0);
+    const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_API_KEY);
+   
 
     // Simple timer logic
     useEffect(() => {
         const interval = setInterval(() => {
             setTime(prev => prev + 1);
         }, 1000);
+       
         return () => clearInterval(interval);
     }, []);
+    useEffect(() => {
+        startCall();
+    }, [interviewInfo]);
+     const startCall = () =>{
+        let questionList;
+        interviewInfo?.interviewData?.questionList.forEach((item,index) => {
+            questionList =item?.question + ',' + questionList;
+            
+        });
+        console.log(questionList);
+    }
 
     const formatTime = (seconds) => {
         const hrs = Math.floor(seconds / 3600);
