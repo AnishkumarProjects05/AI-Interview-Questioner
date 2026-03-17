@@ -14,6 +14,7 @@ function StartInterviewPage() {
     const [isMuted, setIsMuted] = useState(false);
     const [time, setTime] = useState(0);
     const [vapi, setVapi] = useState(null);
+    const [activeUser,setActiveUser] = useState(false);
     const [callStatus, setCallStatus] = useState("inactive"); // inactive, connecting, active, error
 
     // Simple timer logic
@@ -116,6 +117,28 @@ function StartInterviewPage() {
             setCallStatus("inactive");
         }
     }
+     vapi.on('call-start', () => {
+        console.log('Call has started');
+        toast("Call Connected To AI Recruiter")
+    });
+
+    vapi.on("speech-start",()=>{
+        console.log("Assistance is started");
+        toast("Assistance is started")
+        setActiveUser(false);
+
+    })
+    vapi.on('speech-end', () => {
+        console.log('Speech has ended');
+        toast("Assistance is ended")
+        setActiveUser(true);
+    });
+    vapi.on('call-end', () => {
+        console.log('Call has stopped');
+        toast("Call has stopped");
+    });
+   
+
 
 
     const formatTime = (seconds) => {
@@ -145,15 +168,13 @@ function StartInterviewPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-full">
                     {/* AI Recruiter Panel */}
                     <div className="bg-white rounded-2xl shadow-md border border-gray-100 flex flex-col items-center justify-center relative transition-all hover:shadow-lg">
-                        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20 bg-gray-50 relative mb-4">
+                        {!activeUser && <><div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20 bg-gray-50 relative mb-4">
                             <Image
                                 src={'/ai.png'}
                                 alt="AI Recruiter"
                                 fill
-                                className="object-cover"
-                            />
-                        </div>
-                        <h2 className="text-lg font-semibold text-gray-700">AI Recruiter</h2>
+                                className="object-cover" />
+                        </div><h2 className="text-lg font-semibold text-gray-700">AI Recruiter</h2></>}
 
                         {callStatus === "inactive" && (
                             <Button onClick={handleStartCall} className="mt-4">
