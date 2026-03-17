@@ -75,6 +75,7 @@ function QuestionList({ formData, onCreateLink }) {
                 interview_id,
             };
             console.log(interview_id);
+            
 
             const { error } = await supabase.from('Interviews').insert([payload]);
             if (error) {

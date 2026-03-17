@@ -53,13 +53,14 @@ function InterviewPage() {
 
         if (error) {
             console.error("Error fetching for join:", error);
+            setLoading(false);
             return;
         }
 
         console.log(Interviews[0]);
         setInterviewInfo({
             userName: user?.name,
-            questionlist: Interviews[0]
+            interviewData: Interviews[0]
         });
         router.push('/interview/' + interview_id + '/start');
         setLoading(false);
