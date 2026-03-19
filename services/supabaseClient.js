@@ -6,11 +6,14 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-    console.warn("Supabase credentials missing. Supabase client will not be initialized correctly.");
+// Robust check: ensure URL is present and starts with http/https
+const isValidUrl = supabaseUrl && (supabaseUrl.startsWith('http://') || supabaseUrl.startsWith('https://'));
+
+if (!isValidUrl || !supabaseKey) {
+    console.warn("Supabase credentials missing or invalid. Supabase client will not be initialized correctly.");
 }
 
-export const supabase = (supabaseUrl && supabaseKey) 
+export const supabase = (isValidUrl && supabaseKey) 
     ? createClient(supabaseUrl, supabaseKey, {
         auth: {
             storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
