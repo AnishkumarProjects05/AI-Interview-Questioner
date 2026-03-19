@@ -83,6 +83,10 @@ function QuestionList({ formData, onCreateLink }) {
                 interview_id,
             };
             
+            if (!supabase) {
+                toast('Database connection not available.');
+                return;
+            }
             const { error } = await supabase.from('Interviews').insert([payload]);
             if (error) {
                 console.error(error);

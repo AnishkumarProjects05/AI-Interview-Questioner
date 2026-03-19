@@ -39,6 +39,7 @@ function Provider({ children }) {
         } else if (!user && pathname !== '/auth') {
             // If NOT logged in and trying to access any page other than /auth, go to auth
             const checkAuth = async () => {
+                if (!supabase) return;
                 const { data } = await supabase.auth.getUser();
                 if (!data?.user) {
                     router.replace('/auth');
@@ -76,6 +77,7 @@ function Provider({ children }) {
     };
 
     const CreateNewUser = async () => {
+        if (!supabase) return;
         const { data: authData, error: authError } = await supabase.auth.getUser();
         if (authError) {
             console.error("Auth error:", authError);
@@ -90,6 +92,7 @@ function Provider({ children }) {
 
         const userRow = mapAuthUserToRow(authUser);
 
+        if (!supabase) return;
         const { data: Users, error } = await supabase
             .from('Users')
             .select('*')
@@ -102,6 +105,7 @@ function Provider({ children }) {
 
         if (Users?.length === 0) {
             console.log('Creating New User');
+            if (!supabase) return;
             const { data, error: insertError } = await supabase.from('Users')
                 .insert([userRow])
                 .select()
