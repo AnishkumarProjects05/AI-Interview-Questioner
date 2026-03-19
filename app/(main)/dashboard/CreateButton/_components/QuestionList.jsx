@@ -102,34 +102,60 @@ function QuestionList({ formData, onCreateLink }) {
     const GenerateQuestions = async () => {
         setLoading(true);
         try {
+            console.log("Generating questions for:", formData);
             const result = await axios.post('/api/aimodel', {
                 ...formData,
             });
+            console.log("API Response:", result.data);
+
             const raw = result.data?.content ?? '';
             const cleaned = raw.replace(/```json|```/g, '').trim();
 
             const parseJsonLoose = (text) => {
-                try { return JSON.parse(text); } catch { }
+                try { 
+                    return JSON.parse(text); 
+                } catch (e) { 
+                    console.log("Direct JSON parse failed, trying regex...");
+                }
+
                 const matchList = text.match(/interviewQuestions\s*=\s*(\[[\s\S]*\])/i);
                 if (matchList?.[1]) {
-                    return JSON.parse(matchList[1]);
+                    try {
+                        return JSON.parse(matchList[1]);
+                    } catch (e) {
+                        console.log("Regex match parse failed, trying manual slice...");
+                    }
                 }
+
                 const aStart = text.indexOf('[');
                 const aEnd = text.lastIndexOf(']');
                 if (aStart !== -1 && aEnd > aStart) {
                     const arrSlice = text.slice(aStart, aEnd + 1);
-                    try { return JSON.parse(arrSlice); } catch { }
+                    try { 
+                        const sanitized = arrSlice.replace(/,\s*\]/g, ']');
+                        return JSON.parse(sanitized); 
+                    } catch (e) { 
+                        console.log("Manual slice parse failed.");
+                    }
                 }
                 return [];
             };
 
             const parsed = parseJsonLoose(cleaned);
-            const questions = parsed?.interviewQuestions ?? parsed ?? [];
-            const formattedQuestions = (Array.isArray(questions) ? questions : []).map(q => ({
-                question: q.question || q,
-                type: q.type || 'General'
+            console.log("Parsed JSON Object:", parsed);
+
+            const questions = parsed?.interviewQuestions ?? (Array.isArray(parsed) ? parsed : []);
+            
+            if (questions.length === 0) {
+                console.warn("No questions found in parsed data.");
+            }
+
+            const formattedQuestions = questions.map(q => ({
+                question: typeof q === 'string' ? q : (q.question || q.Question || ''),
+                type: q.type || q.Type || 'General'
             }));
 
+            console.log("Formatted Questions:", formattedQuestions);
             setQuestionList(formattedQuestions);
             return formattedQuestions;
         } catch (error) {
