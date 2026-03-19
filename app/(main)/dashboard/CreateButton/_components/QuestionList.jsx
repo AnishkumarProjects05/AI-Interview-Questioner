@@ -56,13 +56,21 @@ function QuestionList({ formData, onCreateLink }) {
     const { user } = useUser();
     useEffect(() => {
         if (formData) {
-            GenerateQuestions();
+            GenerateQuestionsAndSave();
         }
     }, [formData]);
 
-    const onFinish = async () => {
-        if (!questionList.length) {
-            toast('Generate questions before saving.');
+    const GenerateQuestionsAndSave = async () => {
+        const questions = await GenerateQuestions();
+        if (questions && questions.length > 0) {
+            await onFinish(questions);
+        }
+    };
+
+    const onFinish = async (questionsToSave) => {
+        const questions = questionsToSave || questionList;
+        if (!questions.length) {
+            toast('No questions to save.');
             return;
         }
         setSaving(true);
@@ -70,20 +78,18 @@ function QuestionList({ formData, onCreateLink }) {
             const interview_id = uuidv4();
             const payload = {
                 ...formData,
-                questionList,
+                questionList: questions,
                 userEmail: user?.email ?? null,
                 interview_id,
             };
-            console.log(interview_id);
             
-
             const { error } = await supabase.from('Interviews').insert([payload]);
             if (error) {
                 console.error(error);
                 toast('Failed to save interview. Please try again.');
                 return;
             }
-            toast('Saved in Database Successfully');
+            toast('Interview Ready!');
             onCreateLink(interview_id);
         } catch (error) {
             console.error(error);
@@ -99,13 +105,10 @@ function QuestionList({ formData, onCreateLink }) {
             const result = await axios.post('/api/aimodel', {
                 ...formData,
             });
-            // API returns content as text; clean and parse defensively
             const raw = result.data?.content ?? '';
-            console.log("Raw content from AI:", raw);
             const cleaned = raw.replace(/```json|```/g, '').trim();
 
             const parseJsonLoose = (text) => {
-                // ... (your existing robust JSON parsing logic) ...
                 try { return JSON.parse(text); } catch { }
                 const matchList = text.match(/interviewQuestions\s*=\s*(\[[\s\S]*\])/i);
                 if (matchList?.[1]) {
@@ -117,73 +120,63 @@ function QuestionList({ formData, onCreateLink }) {
                     const arrSlice = text.slice(aStart, aEnd + 1);
                     try { return JSON.parse(arrSlice); } catch { }
                 }
-                const oStart = text.indexOf('{');
-                const oEnd = text.lastIndexOf('}');
-                if (oStart !== -1 && oEnd > oStart) {
-                    const objSlice = text.slice(oStart, oEnd + 1);
-                    try { return JSON.parse(objSlice); } catch { }
-                }
-                throw new Error('Unable to parse JSON response');
+                return [];
             };
 
             const parsed = parseJsonLoose(cleaned);
             const questions = parsed?.interviewQuestions ?? parsed ?? [];
-            // Ensure question object structure is consistently { question: '...', type: '...' }
             const formattedQuestions = (Array.isArray(questions) ? questions : []).map(q => ({
-                question: q.question || q, // Handle cases where the item might be just the question string
-                type: q.type || 'General' // Default type if missing
+                question: q.question || q,
+                type: q.type || 'General'
             }));
 
             setQuestionList(formattedQuestions);
+            return formattedQuestions;
         } catch (error) {
             console.error(error);
-            if (error.response?.status === 429) {
-                toast('Rate limit reached. Please wait a moment and try again.');
-            } else if (error.response?.status === 402) {
-                toast('AI Credit Issue: Please switch back to a free model or check your credits.');
-            } else {
-                toast('Server Error: Failed to generate questions. Try again later.');
-            }
+            toast('Error generating questions. Please try again.');
+            return [];
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="space-y-6">
-            {/* Loading State */}
-            {loading && (
-                <div className="p-6 bg-blue-50 rounded-2xl border border-blue-200 shadow-md flex gap-4 items-center">
-                    <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-                    <div>
-                        <h2 className="text-lg font-semibold text-blue-800">Generating Questions...</h2>
-                        <p className="text-sm text-blue-600">Our AI is preparing your customized interview set.</p>
-                    </div>
+        <div className="flex flex-col items-center justify-center p-16 bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-white/5 shadow-2xl shadow-indigo-100 dark:shadow-black/50 space-y-10 animate-in fade-in zoom-in duration-700 font-inter relative overflow-hidden transition-colors duration-500">
+            
+            {/* Background Decoration */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-50 dark:bg-slate-800 rounded-full blur-3xl opacity-40 -mr-10 -mt-10"></div>
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-indigo-50 dark:bg-slate-800 rounded-full blur-3xl opacity-40 -ml-10 -mb-10"></div>
+
+            <div className="relative group">
+                <div className="absolute inset-0 bg-indigo-400 rounded-full blur-2xl opacity-20 animate-pulse group-hover:opacity-40 transition-opacity"></div>
+                <div className="w-32 h-32 bg-white dark:bg-slate-800 rounded-[2.5rem] flex items-center justify-center relative z-10 shadow-xl border border-slate-200 dark:border-white/10 border-t-indigo-600 border-t-4 animate-spin-slow">
+                    <Zap className="w-12 h-12 text-indigo-600 animate-pulse" />
                 </div>
-            )}
+            </div>
 
-            {/* Question List Display */}
-            {!loading && questionList?.length > 0 && (
-                <div>
-                    <QuestionListContainer questionList={questionList} />
-                    <div>
-                        <Button onClick={onFinish} disabled={saving}>
-                            {saving ? 'Saving...' : 'Generate Interview & Finish'}
-                        </Button>
-                    </div>
-                </div>
+            <div className="text-center space-y-3 relative z-10">
+                <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                    {saving ? 'Finalizing Your Session...' : 'AI is Crafting Questions...'}
+                </h2>
+                <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium leading-relaxed">
+                    Analyzing requirements for <span className="text-indigo-600 dark:text-indigo-400 font-black px-2 py-0.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg">{formData?.jobPosition || 'the role'}</span>.
+                </p>
+            </div>
 
-            )}
+            <div className="w-full max-w-sm bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-200 dark:border-white/5 relative z-10">
+                <div 
+                    className={`h-full bg-indigo-600 transition-all duration-1000 ease-in-out shadow-lg shadow-indigo-200 dark:shadow-indigo-500/20 ${loading ? 'w-2/3' : 'w-full animate-pulse'}`}
+                ></div>
+            </div>
 
-
-            {/* Optional: Empty state if no questions were generated */}
-            {!loading && questionList?.length === 0 && (
-                <div className="p-6 bg-red-50 rounded-2xl border border-red-200 shadow-md flex gap-4 items-center">
-                    <h2 className="text-lg font-semibold text-red-700">No Questions Generated</h2>
-                    <p className="text-sm text-red-500">Please check your input data and try again.</p>
-                </div>
-            )}
-
+            <div className="flex flex-col items-center gap-2 relative z-10">
+                <p className="text-xs text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-widest flex items-center gap-2">
+                    <Loader2 className="w-3 h-3 animate-spin" /> 
+                    Building Intelligent Context
+                </p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">This typically takes a few seconds</p>
+            </div>
         </div>
     );
 }

@@ -7,8 +7,11 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import AlertCallConfirmation from "./_components/AlertCallConfirmation";
 import { useUser } from "@/app/provider";
-
+import { toast } from "sonner";
+import { supabase } from "@/services/supabaseClient";
+import { useRouter } from "next/navigation";
 function StartInterviewPage() {
+    const router = useRouter();
     const { interviewInfo, setInterviewInfo } = useContext(InterviewDataContext);
     const { user } = useUser();
     const [isMuted, setIsMuted] = useState(false);
@@ -16,15 +19,19 @@ function StartInterviewPage() {
     const [vapi, setVapi] = useState(null);
     const [activeUser,setActiveUser] = useState(false);
     const [callStatus, setCallStatus] = useState("inactive"); // inactive, connecting, active, error
+    const [isMounted, setIsMounted] = useState(false);
+
 
     // Simple timer logic
     useEffect(() => {
+        setIsMounted(true);
         const interval = setInterval(() => {
             setTime(prev => prev + 1);
         }, 1000);
 
         return () => clearInterval(interval);
     }, []);
+
 
     useEffect(() => {
         const apiKey = process.env.NEXT_PUBLIC_VAPI_KEY;
@@ -36,10 +43,22 @@ function StartInterviewPage() {
         vapiInstance.on('call-start', () => {
             console.log('Vapi Call started');
             setCallStatus("active");
+            toast("Call Connected To AI Recruiter");
         });
         vapiInstance.on('call-end', () => {
             console.log('Vapi Call ended');
             setCallStatus("inactive");
+            toast("Call has stopped");
+        });
+        vapiInstance.on('speech-start', () => {
+            console.log("Assistance is started");
+            toast("Assistance is started");
+            setActiveUser(false);
+        });
+        vapiInstance.on('speech-end', () => {
+            console.log('Speech has ended');
+            toast("Assistance is ended");
+            setActiveUser(true);
         });
         vapiInstance.on('error', (e) => {
             console.error('Vapi error:', e);
@@ -50,6 +69,7 @@ function StartInterviewPage() {
             vapiInstance.stop();
         };
     }, []);
+
 
     const handleStartCall = () => {
         if (vapi && interviewInfo) {
@@ -111,33 +131,42 @@ function StartInterviewPage() {
         vapi.start(assistantOptions);
 
     }
-    const stopInterviewCall = () => {
+    const stopInterviewCall = async () => {
         if (vapi) {
             vapi.stop();
             setCallStatus("inactive");
+
+            try {
+                // Formatting the actual duration spent
+                const actualDuration = Math.floor(time / 60); // minutes
+                
+                console.log("Updating Interview record with duration:", actualDuration);
+
+                const { data, error } = await supabase
+                    .from('Interviews')
+                    .update({ 
+                        duration: actualDuration.toString(),
+                        // We can also store the exact seconds if needed, but the table seems to expect minutes
+                    })
+                    .eq('interview_id', interviewInfo?.interviewData?.interview_id || interviewInfo?.interview_id);
+
+                if (error) {
+                    console.error("Supabase Update Error:", error);
+                    toast("Meeting Ended. (History note: Failed to update duration)");
+                } else {
+                    console.log("Interview Updated Successfully");
+                    toast("Meeting Ended and Saved Successfully");
+                }
+            } catch (err) {
+                console.error("Unexpected error updating interview:", err);
+                toast("Meeting Ended");
+            } finally {
+                // Redirect to dashboard
+                router.push('/dashboard');
+            }
         }
     }
-     vapi.on('call-start', () => {
-        console.log('Call has started');
-        toast("Call Connected To AI Recruiter")
-    });
-
-    vapi.on("speech-start",()=>{
-        console.log("Assistance is started");
-        toast("Assistance is started")
-        setActiveUser(false);
-
-    })
-    vapi.on('speech-end', () => {
-        console.log('Speech has ended');
-        toast("Assistance is ended")
-        setActiveUser(true);
-    });
-    vapi.on('call-end', () => {
-        console.log('Call has stopped');
-        toast("Call has stopped");
-    });
-   
+    if (!isMounted) return null;
 
 
 
@@ -151,90 +180,153 @@ function StartInterviewPage() {
     const userInitial = (interviewInfo?.userName || user?.name || "Candidate")[0].toUpperCase();
 
     return (
-        <div className="flex flex-col h-screen bg-[#F3F4F6] overflow-hidden">
+        <div className="flex flex-col h-screen bg-background overflow-hidden font-inter relative selection:bg-indigo-500/30 transition-colors duration-500">
+            
+            {/* Immersive Background Mesh */}
+            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-40">
+                <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-100 dark:bg-indigo-600/10 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-100 dark:bg-violet-600/10 rounded-full blur-[100px]"></div>
+            </div>
+
             {/* Header */}
-            <header className="flex items-center justify-between px-10 py-6 bg-transparent">
-                <h1 className="text-xl font-bold text-gray-800">AI Interview Session</h1>
-                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200">
-                    <Timer className="w-5 h-5 text-gray-600" />
-                    <span className="font-mono text-lg font-semibold text-gray-700">
-                        {formatTime(time)}
-                    </span>
+            <header className="flex items-center justify-between px-10 py-6 bg-white/80 dark:bg-slate-950/50 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 relative z-10">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 border-t border-white/10 dark:border-white/20">
+                        <Video className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="space-y-0.5">
+                        <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Session Active</h1>
+                        <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest leading-none">Protected Line</p>
+                    </div>
+                </div>
+                
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-900 px-5 py-2 rounded-xl border border-slate-200 dark:border-white/5 shadow-inner">
+                        <Timer className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        <span className="font-mono text-lg font-black text-slate-700 dark:text-slate-200 tracking-tighter">
+                            {formatTime(time)}
+                        </span>
+                    </div>
                 </div>
             </header>
 
             {/* Main Content - Panels */}
-            <main className="flex-1 px-10 pb-24">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-full">
-                    {/* AI Recruiter Panel */}
-                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 flex flex-col items-center justify-center relative transition-all hover:shadow-lg">
-                        {!activeUser && <><div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20 bg-gray-50 relative mb-4">
-                            <Image
-                                src={'/ai.png'}
-                                alt="AI Recruiter"
-                                fill
-                                className="object-cover" />
-                        </div><h2 className="text-lg font-semibold text-gray-700">AI Recruiter</h2></>}
+            <main className="flex-1 px-10 pt-10 pb-32 relative z-10 overflow-y-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto h-full max-h-[550px]">
+                    
+                    {/* AI Panel */}
+                    <div className="bg-white dark:bg-slate-900/40 backdrop-blur-2xl rounded-2xl border border-slate-200 dark:border-white/5 flex flex-col items-center justify-center relative group overflow-hidden animate-in fade-in slide-in-from-left-8 duration-1000 shadow-sm">
+                        
+                        {/* Status Badge */}
+                        <div className={`absolute top-6 left-6 z-20 flex items-center gap-2 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-slate-200 dark:border-white/5 ${callStatus === 'active' ? 'bg-indigo-600/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'} transition-all`}>
+                            <div className={`w-1.5 h-1.5 rounded-full ${callStatus === 'active' ? 'bg-indigo-500 animate-pulse' : 'bg-slate-400 dark:bg-slate-600'}`}></div>
+                            {callStatus === 'active' ? 'System Live' : 'System Offline'}
+                        </div>
 
-                        {callStatus === "inactive" && (
-                            <Button onClick={handleStartCall} className="mt-4">
-                                Connect AI Recruiter
-                            </Button>
-                        )}
-                        {callStatus === "connecting" && (
-                            <div className="mt-4 text-primary animate-pulse font-medium">
-                                Connecting...
+                        {!activeUser && (
+                            <div className="relative group/avatar">
+                                <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-[80px] group-hover:bg-indigo-500/40 transition-all duration-1000"></div>
+                                <div className="w-40 h-40 rounded-2xl overflow-hidden border-4 border-slate-800 bg-slate-900 relative z-10 shadow-2xl transition-all duration-700 group-hover/avatar:scale-105 group-hover/avatar:-rotate-3">
+                                    <Image
+                                        src={'/ai.png'}
+                                        alt="AI Recruiter"
+                                        fill
+                                        className="object-cover" />
+                                </div>
                             </div>
                         )}
+                        
+                        <div className="mt-8 text-center space-y-2 relative z-10">
+                            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Neural Interviewer</h2>
+                            <p className="text-indigo-600 dark:text-slate-500 text-[9px] font-black uppercase tracking-[0.2em] bg-indigo-50 dark:bg-slate-800/50 px-3 py-1 rounded-md border border-indigo-100 dark:border-white/5">V2.4 Active</p>
+                        </div>
+
+                        <div className="mt-12 relative z-10">
+                            {callStatus === "inactive" && (
+                                <Button onClick={handleStartCall} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-10 py-7 text-lg font-black shadow-2xl shadow-indigo-500/20 transition-all active:scale-95 border-t border-white/10">
+                                    Initiate Intelligence
+                                </Button>
+                            )}
+                            {callStatus === "connecting" && (
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="flex gap-1.5">
+                                        <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                        <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                        <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"></div>
+                                    </div>
+                                    <span className="text-indigo-400 font-black text-[10px] uppercase tracking-[0.3em]">Synapsing...</span>
+                                </div>
+                            )}
+                        </div>
+
                         {callStatus === "error" && (
-                            <div className="mt-4 text-red-500 font-medium text-sm text-center px-4">
-                                Connection Error. Check your API Key and Network.
-                                <Button onClick={handleStartCall} variant="outline" size="sm" className="mt-2 block mx-auto">
-                                    Retry
+                            <div className="mt-6 text-red-500 font-bold text-sm text-center px-8 relative z-10">
+                                <p>Neural Link Severed.</p>
+                                <Button onClick={handleStartCall} variant="outline" size="sm" className="mt-4 border-red-500/20 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20">
+                                    Refresh Session
                                 </Button>
                             </div>
                         )}
-
-                        <div className={`absolute top-4 left-4 ${callStatus === 'active' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-gray-100 text-gray-400 border-gray-200'} px-3 py-1 rounded-full text-xs font-medium border`}>
-                            {callStatus === 'active' ? 'Live' : 'Offline'}
-                        </div>
                     </div>
 
                     {/* Candidate Panel */}
-                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 flex flex-col items-center justify-center relative transition-all hover:shadow-lg">
-                        <div className="w-32 h-32 rounded-full bg-primary flex items-center justify-center text-5xl font-bold text-white mb-4 shadow-inner">
-                            {userInitial}
+                    <div className="bg-white dark:bg-slate-900/40 backdrop-blur-2xl rounded-2xl border border-slate-200 dark:border-white/5 flex flex-col items-center justify-center relative overflow-hidden animate-in fade-in slide-in-from-right-8 duration-1000 shadow-sm">
+                        <div className="absolute top-6 left-6 z-20 px-3 py-1 rounded-lg border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest">
+                            Candidate Focus
                         </div>
-                        <h2 className="text-lg font-semibold text-gray-700">
-                            {interviewInfo?.userName || user?.name || "Candidate"}
-                        </h2>
-                        <div className="absolute top-4 left-4 bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-xs font-medium border border-gray-200">
-                            You
+                        
+                        <div className="relative group/user">
+                            <div className="absolute inset-0 bg-indigo-500/10 dark:bg-violet-500/10 rounded-full blur-[80px] group-hover:bg-indigo-500/20 dark:group-hover:bg-violet-500/20 transition-all duration-1000"></div>
+                            <div className="w-40 h-40 rounded-2xl bg-gradient-to-br from-indigo-600 down to-violet-700 flex items-center justify-center text-6xl font-black text-white relative z-10 shadow-2xl shadow-indigo-500/10 transition-transform duration-700 group-hover/user:scale-105 group-hover/user:rotate-3">
+                                {userInitial}
+                            </div>
+                        </div>
+
+                        <div className="mt-8 text-center space-y-2">
+                             <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+                                {interviewInfo?.userName || user?.name || "Candidate"}
+                            </h2>
+                            <p className="text-slate-400 dark:text-slate-500 text-[9px] font-black uppercase tracking-widest px-4">Calibrating Performance...</p>
                         </div>
                     </div>
                 </div>
             </main>
 
             {/* Bottom Toolbar & Feedback */}
-            <footer className="fixed bottom-0 left-0 right-0 p-6 flex flex-col items-center gap-4 bg-gradient-to-t from-[#F3F4F6] to-transparent">
-                {/* Voice Amplitude Bar (Mockup Style) */}
-                <div className="flex items-center gap-1 h-8 px-4 bg-white/50 rounded-full backdrop-blur-sm">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) => (
-                        <div
-                            key={i}
-                            className={`w-1 rounded-full transition-all duration-300 ${i % 2 === 0 ? 'bg-primary h-3' : 'bg-red-500 h-5'}`}
-                            style={{ opacity: 0.7 }}
-                        />
-                    ))}
+            <footer className="fixed bottom-0 left-0 right-0 p-8 flex flex-col items-center gap-6 bg-gradient-to-t from-background via-background/90 to-transparent relative z-20">
+                
+                {/* Voice Amplitude Bar */}
+                <div className="flex items-end gap-1 px-5 h-10 bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-white/5 rounded-full shadow-indigo-100 dark:shadow-black">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map((i) => {
+                        const heights = [10, 15, 20, 25, 30, 25, 20, 15, 10, 20, 30, 40, 50, 40, 30, 20, 15, 20, 25, 15];
+                        return (
+                            <div
+                                key={i}
+                                className={`w-1 rounded-full transition-all duration-300 ${callStatus === 'active' ? 'bg-indigo-500' : 'bg-slate-800'}`}
+                                style={{ 
+                                    height: callStatus === 'active' ? `${heights[i-1]}%` : '15%',
+                                    opacity: callStatus === 'active' ? (i % 3 === 0 ? 0.3 : 1) : 0.4 
+                                }}
+                            />
+                        );
+                    })}
                 </div>
 
-                {/* Controls */}
-                <div className="flex items-center gap-6 bg-white px-8 py-4 rounded-3xl shadow-xl border border-gray-200">
-                    <Mic className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
+                {/* Controls Bar */}
+                <div className="flex items-center gap-6 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-white/5 shadow-2xl shadow-indigo-200 dark:shadow-black animate-in slide-in-from-bottom-8 duration-1000">
+                    <button className="p-4 bg-slate-50 dark:bg-slate-800 text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer border border-slate-100 dark:border-transparent hover:border-slate-200 dark:hover:border-white/5 active:scale-95 group">
+                        <MicOff className="h-6 w-6 transition-transform group-hover:scale-110" />
+                    </button>
+                    
                     <AlertCallConfirmation stopInterview={() => stopInterviewCall()}>
-                        <Phone className="h-12 w-12 p-3 bg-gray-500 text-white rounded-full cursor-pointer" />
+                        <button className="p-5 bg-red-500 text-white rounded-2xl hover:bg-red-600 transition-all cursor-pointer shadow-xl shadow-red-500/20 active:scale-95 group">
+                            <PhoneOff className="h-7 w-7 transition-transform group-hover:rotate-12" />
+                        </button>
                     </AlertCallConfirmation>
 
+                    <button className="p-4 bg-slate-50 dark:bg-slate-800 text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer border border-slate-100 dark:border-transparent hover:border-slate-200 dark:hover:border-white/5 active:scale-95 group">
+                        <Video className="h-6 w-6 transition-transform group-hover:scale-110" />
+                    </button>
                 </div>
             </footer>
         </div>

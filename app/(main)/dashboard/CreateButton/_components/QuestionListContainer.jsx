@@ -42,28 +42,31 @@ const getTypeDesign = (type = '') => {
 function QuestionListContainer({questionList}) {
   return (
     <div>
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-gray-800 border-b pb-2">Generated Interview Questions</h2>
+      <div className="space-y-6">
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/10 pb-4 tracking-tight uppercase">Generated Interview Questions</h2>
         {questionList.map((item, index) => {
           const { icon: Icon, label, bgColor, textColor, borderColor } = getTypeDesign(item.type);
 
           return (
             <div 
               key={index} 
-              className="p-4 bg-white rounded-xl shadow-lg border border-gray-100 transition-shadow duration-300 hover:shadow-xl"
+              className="p-6 bg-white dark:bg-slate-900/80 rounded-2xl shadow-xl shadow-indigo-100 dark:shadow-black border border-slate-200 dark:border-white/5 transition-all duration-300 hover:scale-[1.01] hover:border-indigo-500/20"
             >
               {/* Question Text (Prominent) */}
-              <p className="font-medium text-lg text-gray-900 leading-relaxed mb-3">
-                <span className="font-bold mr-2 text-gray-500">Q{index + 1}.</span> {item.question}
-              </p>
+              <div className="flex gap-4">
+                <span className="font-black text-xl text-slate-300 dark:text-slate-600 shrink-0">{(index + 1).toString().padStart(2, '0')}</span>
+                <p className="font-bold text-lg text-slate-800 dark:text-slate-100 leading-relaxed mb-3 flex-1">
+                   {item.question}
+                </p>
+              </div>
 
               {/* Question Type Tag */}
-              <div className="flex justify-end mt-2">
+              <div className="flex justify-end mt-4">
                 <div 
-                  className={`px-3 py-1 text-xs font-semibold rounded-full border ${bgColor} ${textColor} ${borderColor} flex items-center`}
+                  className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-500/20 flex items-center`}
                 >
-                  <Icon className="w-3 h-3 mr-1" />
-                  <span>Type: {label}</span>
+                  <Icon className="w-3 h-3 mr-2" />
+                  <span>{label} Node</span>
                 </div>
               </div>   
               

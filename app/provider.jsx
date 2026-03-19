@@ -5,14 +5,48 @@ import React from 'react'
 import { supabase } from '@/services/supabaseClient'
 import { useContext } from 'react';
 import UserDetailContext from '@/context/UserDetailContext';
+import { useRouter, usePathname } from 'next/navigation';
 
 
 function Provider({ children }) {
     const [user, setUser] = useState(null);
+    const [theme, setTheme] = useState('light');
+    const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
+        // Initialize theme
+        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        setTheme(savedTheme);
+        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
         CreateNewUser();
-    }, [])   // run once on mount
+    }, [])
+
+    const toggleTheme = () => {
+        const newTheme = theme === 'light' ? 'dark' : 'light';
+        setTheme(newTheme);
+        localStorage.setItem('theme', newTheme);
+        document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    }
+
+    useEffect(() => {
+        // Handle redirection after user state is updated or when pathname changes
+        if (user) {
+            // If logged in and on /auth or /, go to dashboard
+            if (pathname === '/auth' || pathname === '/') {
+                router.replace('/dashboard');
+            }
+        } else if (!user && pathname !== '/auth') {
+            // If NOT logged in and trying to access any page other than /auth, go to auth
+            const checkAuth = async () => {
+                const { data } = await supabase.auth.getUser();
+                if (!data?.user) {
+                    router.replace('/auth');
+                }
+            };
+            checkAuth();
+        }
+    }, [user, pathname]);
 
     // Build a safe row so we don't insert nulls when metadata keys differ by provider
     const mapAuthUserToRow = (authUser) => {
@@ -88,7 +122,7 @@ function Provider({ children }) {
     }
 
     return (
-        <UserDetailContext.Provider value={{ user, setUser }}>
+        <UserDetailContext.Provider value={{ user, setUser, theme, toggleTheme }}>
             <div>{children}</div>
         </UserDetailContext.Provider>
 

@@ -33,12 +33,17 @@ function CreateInterview() {
         
   }
   return (
-    <div className='mt-10 px-10 lg:px-44 xl:px-56'>
-      <div className='flex  gap-5 items-center'>
-        <ArrowLeft onClick={() => router.back()} className='cursor-pointer text-2xl' />
-        <h2 className='text-2xl font-bold font-sans'>Create an New Interview</h2>
+    <div className='mt-10 px-10 lg:px-44 xl:px-56 font-inter'>
+      <div className='flex gap-5 items-center mb-6'>
+        <button 
+          onClick={() => router.back()} 
+          className='p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 shadow-sm'
+        >
+          <ArrowLeft className='w-5 h-5' />
+        </button>
+        <h2 className='text-3xl font-black text-slate-900 dark:text-white tracking-tight'>Session Architect</h2>
       </div>
-      <Progress value={step * 33.33} className='mt-2' />
+      <Progress value={step * 33.33} className='h-2 mb-10' />
 
       {step === 1 && (
         <FormContainer
