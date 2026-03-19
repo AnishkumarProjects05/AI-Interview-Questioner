@@ -446,4 +446,4 @@ For support, questions, or feedback:
 
 ---
 
-**Made with ❤️ by [Your Name]**
+**Made with ❤️ by Anish Kumar**
