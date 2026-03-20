@@ -16,7 +16,7 @@ function InterviewPage() {
     const { interviewInfo, setInterviewInfo } = useContext(InterviewDataContext);
     const { user } = useUser();
 
-    useEffect(() => {
+    useEffect(() => {   
         if (interview_id) {
             GetInterviewDetails();
         }
