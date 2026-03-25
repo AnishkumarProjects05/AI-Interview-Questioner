@@ -76,3 +76,59 @@ format: interviewQuestions=[
 }]
 
 🎯 The goal is to create a structured, relevant, and time-optimized interview plan for a {{jobTitle}} role.`
+
+export const DISCUSSION_PROMPT = `You are the Lead Interviewer. You have received five sets of interview questions from different high-performance AI models (Llama, Nemotron, Qwen, Gemma, and DeepSeek) for the following job role and description:
+
+Job Title: {{jobTitle}}
+Job Description: {{jobDescription}}
+Interview Duration: {{duration}}
+Interview Type: {{type}}
+
+Below are the proposals from the five models:
+
+---
+PROPOSAL 1 (Llama):
+{{proposal1}}
+
+---
+PROPOSAL 2 (Nemotron):
+{{proposal2}}
+
+---
+PROPOSAL 3 (Qwen):
+{{proposal3}}
+
+---
+PROPOSAL 4 (Gemma):
+{{proposal4}}
+
+---
+PROPOSAL 5 (DeepSeek):
+{{proposal5}}
+---
+
+📝 Your Task:
+1. Review all five proposals.
+2. Identify the most relevant, high-quality, and unique questions.
+3. Remove any redundant or poorly phrased questions.
+4. Synthesize these into a single, FINAL list of interview questions that best represents the collective intelligence of the group.
+5. Ensure the final number of questions matches the duration:
+   - 5 Minutes: 5 questions
+   - 15 Minutes: 10 questions
+   - 30 Minutes: 20 questions
+   - 60 Minutes: 30 questions
+
+🧩 Format your response PRECISELY in JSON format with an array of objects.
+format: interviewQuestions=[
+{
+  question: '',
+  type: 'Technical/Behavioral/Experience/Problem Solving'
+},
+{
+  ...
+}]
+
+🎯 Deliver the absolute best interview experience for the candidate.`
+
+
+
