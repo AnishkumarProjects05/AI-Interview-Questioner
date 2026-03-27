@@ -64,6 +64,8 @@ Follow these constraints for the number of questions:
 
 Adjust the number and depth of questions to match the interview duration.
 
+IMPORTANT: You must generate ONLY {{type}} questions. Do not include questions from other categories. Every single question in your response MUST have the type "{{type}}".
+
 Ensure the questions match the tone and structure of a real-life {{type}} interview.
 
 🧩 Format your response PRECISELY in JSON format.
@@ -114,6 +116,8 @@ PROPOSAL 3:
    - 15 Minutes: 10 questions
    - 30 Minutes: 20 questions
    - 60 Minutes: 30 questions
+
+IMPORTANT: Your final list MUST contain ONLY {{type}} questions. If any input proposal contains questions of a different type, you must either discard them or refactor them to be {{type}} questions. Every single question in your final JSON MUST have the type "{{type}}".
 
 🧩 Format your response PRECISELY in JSON format.
 Your entire response must be a single JSON object with a key "interviewQuestions" containing the array of questions.
