@@ -107,12 +107,58 @@ function QuestionList({ formData, onCreateLink }) {
         setLoading(true);
         try {
             console.log("Generating questions for:", formData);
-            const result = await axios.post('/api/aimodel', {
-                ...formData,
+            
+            const response = await fetch('/api/aimodel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
             });
-            console.log("API Response:", result.data);
 
-            const raw = result.data?.content ?? '';
+            if (!response.ok) throw new Error('Failed to start generation');
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let finalContent = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n').filter(line => line.trim());
+
+                for (const line of lines) {
+                    try {
+                        const data = JSON.parse(line);
+                        console.log("Stream update:", data);
+
+                        if (data.status === 'thinking') {
+                            toast.info(data.message, {
+                                icon: <Cpu className="w-4 h-4" />,
+                                style: { background: '#6366f1', color: 'white' }
+                            });
+                        } else if (data.status === 'model_finished') {
+                            toast.success(data.message, {
+                                icon: <Zap className="w-4 h-4" />,
+                                style: { background: '#10b981', color: 'white' }
+                            });
+                        } else if (data.status === 'synthesizing') {
+                            toast(data.message, {
+                                icon: <Loader2 className="w-4 h-4 animate-spin" />,
+                                style: { background: '#f59e0b', color: 'white' }
+                            });
+                        } else if (data.status === 'completed') {
+                            finalContent = data.content;
+                        } else if (data.status === 'error') {
+                            toast.error(data.message);
+                        }
+                    } catch (e) {
+                        console.error("Error parsing stream chunk:", e);
+                    }
+                }
+            }
+
+            const raw = finalContent || '';
             const cleaned = raw.replace(/```json|```/g, '').trim();
 
             const parseJsonLoose = (text) => {
@@ -164,7 +210,7 @@ function QuestionList({ formData, onCreateLink }) {
             return formattedQuestions;
         } catch (error) {
             console.error(error);
-            toast('Error generating questions. Please try again.');
+            toast.error('Error generating questions. Please try again.');
             return [];
         } finally {
             setLoading(false);

@@ -11,7 +11,7 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
   let retries = 1;
   while (retries >= 0) {
     try {
-      console.log(`[Panel Discussion] ${modelName} is starting to think... (Attempt ${2-retries})`);
+      console.log(`[Panel Discussion] ${modelName} is starting to think... (Attempt ${2 - retries})`);
 
       const completionPromise = openai.chat.completions.create({
         model: model,
@@ -28,7 +28,6 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
       console.log(`[Panel Discussion] ${modelName} has finished.`);
       return completion.choices[0].message.content;
     } catch (error) {
-       // Detailed logging for fatal errors
       const statusMatch = error.message.match(/\b\d{3}\b/);
       const status = statusMatch ? statusMatch[0] : null;
 
@@ -36,9 +35,9 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
         console.error(`Final failure for ${modelName}: [${status || 'Error'}] ${error.message}`);
         return null;
       }
-      
+
       console.warn(`Retry ${modelName} after issue: ${error.message}`);
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Slightly longer delay between retries
+      await new Promise(resolve => setTimeout(resolve, 1500));
       retries--;
     }
   }
@@ -53,62 +52,69 @@ export async function POST(request) {
     .replace('{{duration}}', duration ?? '')
     .replace('{{type}}', Array.isArray(type) ? type.join(', ') : (type ?? ''));
 
-  console.log("-----------------------------------------");
-  console.log("Starting ULTRA-ROBUST Generation Flow...");
+  const encoder = new TextEncoder();
 
-  try {
-    // Ultra-reliable model panel: Focusing exclusively on Llama models
-    // These are currently the most stable and performant on NVIDIA's endpoint
-    const models = [
-      { id: "meta/llama-3.1-8b-instruct", name: "Llama 8B" },
-      { id: "meta/llama-3.2-1b-instruct", name: "Llama 1B" }
-    ];
+  const stream = new ReadableStream({
+    async start(controller) {
+      const sendUpdate = (data) => {
+        controller.enqueue(encoder.encode(JSON.stringify(data) + "\n"));
+      };
 
-    // Step 1: Parallel Generation (Generous 60s timeout)
-    const resultPromises = models.map(model => getAICompletion(model.id, FINAL_PROMPT, true, model.name, 60000));
-    const proposals = await Promise.all(resultPromises);
+      try {
+        sendUpdate({ status: 'thinking', message: 'AI Panel is starting to think...' });
 
-    const [prop1, prop2] = proposals;
+        const models = [
+          { id: "meta/llama-3.1-8b-instruct", name: "Llama 8B" },
+          { id: "meta/llama-3.2-1b-instruct", name: "Llama 1B" }
+        ];
 
-    // Filter out failed proposals
-    const validProposals = proposals.filter(p => p !== null);
-    
-    if (validProposals.length === 0) {
-      throw new Error("All models failed to respond. Please check your NVIDIA API key and connectivity.");
+        // Step 1: Parallel Generation
+        const resultPromises = models.map(async (model) => {
+          const result = await getAICompletion(model.id, FINAL_PROMPT, true, model.name, 60000);
+          if (result) {
+            sendUpdate({ status: 'model_finished', model: model.name, message: `${model.name} has finished generating.` });
+          }
+          return result;
+        });
+
+        const proposals = await Promise.all(resultPromises);
+        const [prop1, prop2] = proposals;
+        const validProposals = proposals.filter(p => p !== null);
+
+        if (validProposals.length === 0) {
+          throw new Error("All models failed to respond.");
+        }
+
+        sendUpdate({ status: 'synthesizing', message: 'Lead Interviewer is synthesising the best questions...' });
+
+        // Step 2: Synthesis
+        const FINAL_DISCUSSION_PROMPT = DISCUSSION_PROMPT
+          .replace('{{jobTitle}}', jobPosition ?? '')
+          .replace('{{jobDescription}}', jobDescription ?? '')
+          .replace('{{duration}}', duration ?? '')
+          .replace('{{type}}', Array.isArray(type) ? type.join(', ') : (type ?? ''))
+          .replace('{{proposal1}}', prop1 || "No proposal available")
+          .replace('{{proposal2}}', prop2 || "No proposal available")
+          .replace('{{proposal3}}', "No proposal available");
+
+        const finalAnswer = await getAICompletion("meta/llama-3.3-70b-instruct", FINAL_DISCUSSION_PROMPT, true, "Lead Interviewer", 60000);
+
+        if (!finalAnswer) {
+          sendUpdate({ status: 'fallback', message: 'Using best individual proposal as synthesis timed out.' });
+          sendUpdate({ status: 'completed', content: validProposals[0] });
+        } else {
+          sendUpdate({ status: 'completed', content: finalAnswer });
+        }
+
+        controller.close();
+      } catch (error) {
+        sendUpdate({ status: 'error', message: error.message });
+        controller.close();
+      }
     }
+  });
 
-    // Step 2: Synthesis / Discussion
-    const FINAL_DISCUSSION_PROMPT = DISCUSSION_PROMPT
-      .replace('{{jobTitle}}', jobPosition ?? '')
-      .replace('{{jobDescription}}', jobDescription ?? '')
-      .replace('{{duration}}', duration ?? '')
-      .replace('{{type}}', Array.isArray(type) ? type.join(', ') : (type ?? ''))
-      .replace('{{proposal1}}', prop1 || "No proposal available")
-      .replace('{{proposal2}}', prop2 || "No proposal available")
-      .replace('{{proposal3}}', "No proposal available"); // Redundant now but kept for prompt consistency
-
-    console.log("-----------------------------------------");
-    console.log("Starting Synthesis Phase...");
-
-    // Using Llama 3.3 70B for synthesis - the gold standard for reliable JSON output
-    const finalAnswer = await getAICompletion("meta/llama-3.3-70b-instruct", FINAL_DISCUSSION_PROMPT, true, "Lead Interviewer", 60000);
-
-    if (!finalAnswer) {
-      console.warn("Synthesis failed, falling back to the best individual proposal.");
-      return NextResponse.json({ content: validProposals[0] });
-    }
-
-    console.log("-----------------------------------------");
-    console.log("Successfully Generated Interview Questions.");
-    console.log("-----------------------------------------");
-
-    return NextResponse.json({ content: finalAnswer });
-
-  } catch (error) {
-    console.error('Fatal error in interview question flow:', error);
-    return NextResponse.json({
-      error: 'Generation Failed',
-      details: error.message
-    }, { status: 500 });
-  }
+  return new Response(stream, {
+    headers: { 'Content-Type': 'application/x-ndjson' },
+  });
 }
