@@ -66,49 +66,46 @@ Adjust the number and depth of questions to match the interview duration.
 
 Ensure the questions match the tone and structure of a real-life {{type}} interview.
 
-🧩 Format your response in JSON format with array list of questions.
-format: interviewQuestions=[
+🧩 Format your response PRECISELY in JSON format.
+Your entire response must be a single JSON object with a key "interviewQuestions" containing the array of questions.
+
+Example format:
 {
- question:'',
- type:'Technical/Behavioral/Experience/Problem Solving'
-},{
-...
-}]
+  "interviewQuestions": [
+    {
+      "question": "What is...",
+      "type": "Technical"
+    },
+    ...
+  ]
+}
 
 🎯 The goal is to create a structured, relevant, and time-optimized interview plan for a {{jobTitle}} role.`
 
-export const DISCUSSION_PROMPT = `You are the Lead Interviewer. You have received five sets of interview questions from different high-performance AI models (Llama, Nemotron, Qwen, Gemma, and DeepSeek) for the following job role and description:
+export const DISCUSSION_PROMPT = `You are the Lead Interviewer. You have received several sets of interview questions from different high-performance AI models for the following job role and description:
 
 Job Title: {{jobTitle}}
 Job Description: {{jobDescription}}
 Interview Duration: {{duration}}
 Interview Type: {{type}}
 
-Below are the proposals from the five models:
+Below are the proposals from the models:
 
 ---
-PROPOSAL 1 (Llama):
+PROPOSAL 1:
 {{proposal1}}
 
 ---
-PROPOSAL 2 (Nemotron):
+PROPOSAL 2:
 {{proposal2}}
 
 ---
-PROPOSAL 3 (Qwen):
+PROPOSAL 3:
 {{proposal3}}
-
----
-PROPOSAL 4 (Gemma):
-{{proposal4}}
-
----
-PROPOSAL 5 (DeepSeek):
-{{proposal5}}
 ---
 
 📝 Your Task:
-1. Review all five proposals.
+1. Review all proposals.
 2. Identify the most relevant, high-quality, and unique questions.
 3. Remove any redundant or poorly phrased questions.
 4. Synthesize these into a single, FINAL list of interview questions that best represents the collective intelligence of the group.
@@ -118,17 +115,18 @@ PROPOSAL 5 (DeepSeek):
    - 30 Minutes: 20 questions
    - 60 Minutes: 30 questions
 
-🧩 Format your response PRECISELY in JSON format with an array of objects.
-format: interviewQuestions=[
+🧩 Format your response PRECISELY in JSON format.
+Your entire response must be a single JSON object with a key "interviewQuestions" containing the array of questions.
+
+Example format:
 {
-  question: '',
-  type: 'Technical/Behavioral/Experience/Problem Solving'
-},
-{
-  ...
-}]
+  "interviewQuestions": [
+    {
+      "question": "What is...",
+      "type": "Technical"
+    },
+    ...
+  ]
+}
 
 🎯 Deliver the absolute best interview experience for the candidate.`
-
-
-

@@ -7,13 +7,12 @@ const openai = new OpenAI({
   apiKey: process.env.NVIDIA_API_KEY,
 });
 
-async function getAICompletion(model, prompt, isJson = true, modelName = "Model", timeoutMs = 30000) {
-  let retries = 1; // Reduced retries to save time
+async function getAICompletion(model, prompt, isJson = true, modelName = "Model", timeoutMs = 60000) {
+  let retries = 1;
   while (retries >= 0) {
     try {
-      console.log(`[Panel Discussion] ${modelName} is starting to think...`);
-      
-      // Implement timeout using Promise.race
+      console.log(`[Panel Discussion] ${modelName} is starting to think... (Attempt ${2-retries})`);
+
       const completionPromise = openai.chat.completions.create({
         model: model,
         messages: [{ role: "user", content: prompt }],
@@ -25,16 +24,21 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
       );
 
       const completion = await Promise.race([completionPromise, timeoutPromise]);
-      
+
       console.log(`[Panel Discussion] ${modelName} has finished.`);
       return completion.choices[0].message.content;
     } catch (error) {
-      if (retries === 0) {
-        console.error(`Final error/timeout calling ${modelName}:`, error.message);
+       // Detailed logging for fatal errors
+      const statusMatch = error.message.match(/\b\d{3}\b/);
+      const status = statusMatch ? statusMatch[0] : null;
+
+      if (retries === 0 || status === '404' || status === '401') {
+        console.error(`Final failure for ${modelName}: [${status || 'Error'}] ${error.message}`);
         return null;
       }
-      console.warn(`Retry ${modelName} after error:`, error.message);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      console.warn(`Retry ${modelName} after issue: ${error.message}`);
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Slightly longer delay between retries
       retries--;
     }
   }
@@ -50,23 +54,28 @@ export async function POST(request) {
     .replace('{{type}}', Array.isArray(type) ? type.join(', ') : (type ?? ''));
 
   console.log("-----------------------------------------");
-  console.log("Starting Optimized Multi-Model Generation...");
+  console.log("Starting ULTRA-ROBUST Generation Flow...");
 
   try {
-    // Using faster/smaller models to ensure <1 minute total time
+    // Ultra-reliable model panel: Focusing exclusively on Llama models
+    // These are currently the most stable and performant on NVIDIA's endpoint
     const models = [
       { id: "meta/llama-3.1-8b-instruct", name: "Llama 8B" },
-      { id: "nvidia/llama-3.1-nemotron-70b-instruct", name: "Nemotron 70B" },
-      { id: "qwen/qwen-2.5-7b-instruct", name: "Qwen 7B" },
-      { id: "google/gemma-2-9b-it", name: "Gemma 9B" },
-      { id: "deepseek-ai/deepseek-v3", name: "DeepSeek V3" }
+      { id: "meta/llama-3.2-1b-instruct", name: "Llama 1B" }
     ];
 
-    // Step 1: Parallel Generation (Timeout: 30s)
-    const resultPromises = models.map(model => getAICompletion(model.id, FINAL_PROMPT, true, model.name, 35000));
+    // Step 1: Parallel Generation (Generous 60s timeout)
+    const resultPromises = models.map(model => getAICompletion(model.id, FINAL_PROMPT, true, model.name, 60000));
     const proposals = await Promise.all(resultPromises);
 
-    const [prop1, prop2, prop3, prop4, prop5] = proposals;
+    const [prop1, prop2] = proposals;
+
+    // Filter out failed proposals
+    const validProposals = proposals.filter(p => p !== null);
+    
+    if (validProposals.length === 0) {
+      throw new Error("All models failed to respond. Please check your NVIDIA API key and connectivity.");
+    }
 
     // Step 2: Synthesis / Discussion
     const FINAL_DISCUSSION_PROMPT = DISCUSSION_PROMPT
@@ -74,41 +83,32 @@ export async function POST(request) {
       .replace('{{jobDescription}}', jobDescription ?? '')
       .replace('{{duration}}', duration ?? '')
       .replace('{{type}}', Array.isArray(type) ? type.join(', ') : (type ?? ''))
-      .replace('{{proposal1}}', prop1 || "Model failed to generate")
-      .replace('{{proposal2}}', prop2 || "Model failed to generate")
-      .replace('{{proposal3}}', prop3 || "Model failed to generate")
-      .replace('{{proposal4}}', prop4 || "Model failed to generate")
-      .replace('{{proposal5}}', prop5 || "Model failed to generate");
+      .replace('{{proposal1}}', prop1 || "No proposal available")
+      .replace('{{proposal2}}', prop2 || "No proposal available")
+      .replace('{{proposal3}}', "No proposal available"); // Redundant now but kept for prompt consistency
 
     console.log("-----------------------------------------");
-    console.log("Starting Synthesis Phase (Lead Interviewer is thinking...)");
-    
-    // Using a fast but strong model for synthesis
-    const finalAnswer = await getAICompletion("nvidia/llama-3.1-nemotron-70b-instruct", FINAL_DISCUSSION_PROMPT, true, "Lead Interviewer", 40000);
+    console.log("Starting Synthesis Phase...");
+
+    // Using Llama 3.3 70B for synthesis - the gold standard for reliable JSON output
+    const finalAnswer = await getAICompletion("meta/llama-3.3-70b-instruct", FINAL_DISCUSSION_PROMPT, true, "Lead Interviewer", 60000);
 
     if (!finalAnswer) {
-      const validProposal = proposals.find(p => p !== null);
-      if (validProposal) {
-        console.warn("Synthesis failed/timed out, falling back to a single model proposal");
-        return NextResponse.json({ content: validProposal });
-      }
-      throw new Error("Generation timed out. Please try again.");
+      console.warn("Synthesis failed, falling back to the best individual proposal.");
+      return NextResponse.json({ content: validProposals[0] });
     }
 
     console.log("-----------------------------------------");
-    console.log("Generated Final Interview Questions:");
-    console.log(finalAnswer);
+    console.log("Successfully Generated Interview Questions.");
     console.log("-----------------------------------------");
 
     return NextResponse.json({ content: finalAnswer });
 
   } catch (error) {
-    console.error('Error in multi-model flow:', error);
+    console.error('Fatal error in interview question flow:', error);
     return NextResponse.json({
-      error: 'Failed to generate questions quickly enough. Please try again.',
+      error: 'Generation Failed',
       details: error.message
     }, { status: 500 });
   }
 }
-
-
