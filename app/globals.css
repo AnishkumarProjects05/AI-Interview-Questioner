@@ -73,6 +73,11 @@
 
 :root {
   --radius: 0.75rem;
+  /* Resume module layout variables — keep in sync with lib/resume/globals-css.ts */
+  --top-nav-bar-height: 4rem;
+  /* 64px = h-16 navbar */
+  --resume-control-bar-height: 3rem;
+  --resume-padding: 1.5rem;
   --background: #ffffff;
   --foreground: #020617;
   --card: #ffffff;

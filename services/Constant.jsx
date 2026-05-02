@@ -1,43 +1,53 @@
 import { BriefcaseBusiness, Calendar, CodeIcon, DockIcon, LayoutDashboard, List, Puzzle, User, User2Icon, WalletCards } from "lucide-react";
 
 export const SideBarOptions = [
-    {
-        name: "Dashboard",
-        icon: LayoutDashboard,
-        path: "/dashboard"
-    },
+  {
+    name: "Dashboard",
+    icon: LayoutDashboard,
+    path: "/dashboard"
+  },
 
-    {
-        name: "Interview History",
-        icon: List,
-        path: "/all-interviews"
-    },
-    {
-        name: "Resume-JD Analyzer",
-        icon: DockIcon,
-        path: "/resume-jd-analyzer"
+  {
+    name: "Interview History",
+    icon: List,
+    path: "/all-interviews"
+  },
+  {
+    name: "Resume-JD Analyzer",
+    icon: DockIcon,
+    path: "/resume-jd-analyzer"
 
-    }
+  },
+  {
+    name: "Resume Builder",
+    icon: DockIcon,
+    path: "/resume-builder"
+  },
+  {
+    name: "Resume Parser",
+    icon: DockIcon,
+    path: "/resume-parser"
+  }
 ]
 
 export const InterviewType = [
-    {
-        title: 'Technical',
-        icon: CodeIcon
-    },
-    {
-        title: 'Behaviour',
-        icon: User2Icon
-    },
-    {
-        title: 'Experience',
-        icon: BriefcaseBusiness
+  {
+    title: 'Technical',
+    icon: CodeIcon
+  },
+  {
+    title: 'Behaviour',
+    icon: User2Icon
+  },
+  {
+    title: 'Experience',
+    icon: BriefcaseBusiness
 
-    },
-    {
-        title: 'Problem Solving',
-        icon: Puzzle
-    }
+  },
+  {
+    title: 'Problem Solving',
+    icon: Puzzle
+  }
 ]
 
 export const QUESTION_PROMPT = `You are an expert technical interviewer.
