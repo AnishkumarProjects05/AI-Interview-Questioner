@@ -1,14 +1,32 @@
 "use client";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Moon, Sun, FileText, ArrowLeft } from "lucide-react";
+import { Moon, Sun, FileText, ArrowLeft, LogOut } from "lucide-react";
 import { useUser } from "@/app/provider";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/services/supabaseClient";
 
 export const TopNavBar = () => {
   const pathName = usePathname();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const router = useRouter();
+
   const ctx = useUser();
   const theme = ctx?.theme;
   const toggleTheme = ctx?.toggleTheme;
+  const user = ctx?.user;
+  const setUser = ctx?.setUser;
+
+  const userInitial = user?.name?.charAt(0).toUpperCase() || "U";
+
+  const handleLogout = async () => {
+    setIsUserMenuOpen(false);
+    if (!supabase) return;
+    if (setUser) setUser(null);
+    await supabase.auth.signOut();
+    router.replace('/auth');
+  }
 
   const navLinks = [
     { href: "/resume-builder", label: "Builder" },
@@ -50,8 +68,8 @@ export const TopNavBar = () => {
                 key={href}
                 href={href}
                 className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${isActive
-                    ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
-                    : "text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-white/5"
+                  ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                  : "text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-white/5"
                   }`}
               >
                 {label}
@@ -86,6 +104,39 @@ export const TopNavBar = () => {
               <Moon className="w-4 h-4" />
             )}
           </button>
+
+          {/* User Avatar & Dropdown */}
+          <div className="relative ml-2">
+            <div
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 border-2 border-white dark:border-white/20 shadow-lg flex items-center justify-center text-white font-black text-xs cursor-pointer hover:scale-105 transition-transform"
+            >
+              {userInitial}
+            </div>
+
+            {/* Dropdown */}
+            {isUserMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setIsUserMenuOpen(false)}
+                />
+                <div className="absolute right-0 mt-3 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="px-4 py-3 border-b border-slate-100 dark:border-white/5 flex flex-col">
+                    <span className="text-xs font-black text-slate-400 uppercase tracking-wider">Account</span>
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{user?.name || "User"}</span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-3 text-left text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Log out
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>

@@ -9,6 +9,11 @@ function Login() {
   const signInGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
+      options: {
+        queryParams: {
+          prompt: 'select_account',
+        },
+      },
     })
     if (error) {
       console.log('Error: ', error.message)
@@ -17,7 +22,7 @@ function Login() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#020617] flex items-center justify-center p-6 relative overflow-hidden font-inter selection:bg-indigo-500/30">
-      
+
       {/* Immersive Background Mesh */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-100 dark:bg-indigo-600/10 rounded-full blur-[120px] animate-pulse"></div>
@@ -26,7 +31,7 @@ function Login() {
       </div>
 
       <div className="w-full max-w-md bg-white/80 dark:bg-slate-900/40 backdrop-blur-2xl rounded-2xl border border-slate-100 dark:border-white/5 shadow-2xl shadow-indigo-100 dark:shadow-black/50 overflow-hidden flex flex-col items-center p-12 relative z-10 animate-in fade-in zoom-in duration-700">
-        
+
         {/* Glow Top Border Effect */}
         <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
 
@@ -37,14 +42,14 @@ function Login() {
 
         {/* Illustration Section */}
         <div className="mb-10 relative group">
-            <div className="absolute inset-0 bg-indigo-500/20 rounded-full scale-125 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-            <Image 
-              src={'/login.png'} 
-              alt='login' 
-              width={260} 
-              height={200} 
-              className='relative z-10 w-[240px] h-auto object-contain transition-transform duration-700 group-hover:scale-105 group-hover:-rotate-2'
-            />
+          <div className="absolute inset-0 bg-indigo-500/20 rounded-full scale-125 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+          <Image
+            src={'/login.png'}
+            alt='login'
+            width={260}
+            height={200}
+            className='relative z-10 w-[240px] h-auto object-contain transition-transform duration-700 group-hover:scale-105 group-hover:-rotate-2'
+          />
         </div>
 
         {/* Text Section */}
@@ -59,20 +64,20 @@ function Login() {
 
         {/* Action Section */}
         <div className="w-full space-y-6">
-            <Button 
-                className='w-full py-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-lg shadow-xl shadow-indigo-500/20 border-t border-white/10 transition-all flex items-center justify-center gap-3 active:scale-[0.97]'
-                onClick={signInGoogle}
-            >
-                <LogIn className="w-5 h-5" />
-                Get Started
-            </Button>
-            
-            <div className="flex items-center justify-center gap-2 pt-2">
-               <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></div>
-               <p className="text-[9px] text-slate-500 text-center uppercase tracking-[0.2em] font-black">
-                   Secured by CareerConnect Cloud
-               </p>
-            </div>
+          <Button
+            className='w-full py-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-lg shadow-xl shadow-indigo-500/20 border-t border-white/10 transition-all flex items-center justify-center gap-3 active:scale-[0.97]'
+            onClick={signInGoogle}
+          >
+            <LogIn className="w-5 h-5" />
+            Get Started
+          </Button>
+
+          <div className="flex items-center justify-center gap-2 pt-2">
+            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></div>
+            <p className="text-[9px] text-slate-500 text-center uppercase tracking-[0.2em] font-black">
+              Secured by CareerConnect Cloud
+            </p>
+          </div>
         </div>
       </div>
 
