@@ -2,9 +2,17 @@ import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 import { QUESTION_PROMPT, DISCUSSION_PROMPT } from '@/services/Constant';
 
+const openRouterApiKey = (
+  process.env.OPEN_ROUTER_API_KEY ?? process.env.OPENROUTER_API_KEY
+)?.trim();
+
 const openai = new OpenAI({
-  baseURL: "https://integrate.api.nvidia.com/v1",
-  apiKey: process.env.NVIDIA_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: openRouterApiKey,
+  defaultHeaders: {
+    "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    "X-Title": "CareerConnect AI",
+  },
 });
 
 async function getAICompletion(model, prompt, isJson = true, modelName = "Model", timeoutMs = 60000) {
@@ -44,6 +52,13 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
 }
 
 export async function POST(request) {
+  if (!openRouterApiKey) {
+    return NextResponse.json(
+      { error: "OPEN_ROUTER_API_KEY is not set in environment variables." },
+      { status: 500 }
+    );
+  }
+
   const { jobPosition, jobDescription, duration, type } = await request.json();
 
   const FINAL_PROMPT = QUESTION_PROMPT
@@ -64,8 +79,10 @@ export async function POST(request) {
         sendUpdate({ status: 'thinking', message: 'AI Panel is starting to think...' });
 
         const models = [
-          { id: "meta/llama-3.1-8b-instruct", name: "Llama 8B" },
-          { id: "meta/llama-3.2-1b-instruct", name: "Llama 1B" }
+          { id: "openai/gpt-5.5", name: "OpenAI GPT 5" },
+          { id: "google/gemini-3.1-flash-lite", name: "Google Gemini 3.1 Lite" },
+          { id: "anthropic/claude-opus-4.7-fast", name: "Anthropic" },
+          { id: "deepseek/deepseek-v4-pro", name: "DeepSeek v4 Pro" }
         ];
 
         // Step 1: Parallel Generation
@@ -78,7 +95,7 @@ export async function POST(request) {
         });
 
         const proposals = await Promise.all(resultPromises);
-        const [prop1, prop2] = proposals;
+        const [prop1, prop2, prop3, prop4] = proposals;
         const validProposals = proposals.filter(p => p !== null);
 
         if (validProposals.length === 0) {
@@ -95,9 +112,10 @@ export async function POST(request) {
           .replace('{{type}}', Array.isArray(type) ? type.join(', ') : (type ?? ''))
           .replace('{{proposal1}}', prop1 || "No proposal available")
           .replace('{{proposal2}}', prop2 || "No proposal available")
-          .replace('{{proposal3}}', "No proposal available");
+          .replace('{{proposal3}}', prop3 || "No proposal available")
+          .replace('{{proposal4}}', prop4 || "No proposal available");
 
-        const finalAnswer = await getAICompletion("meta/llama-3.3-70b-instruct", FINAL_DISCUSSION_PROMPT, true, "Lead Interviewer", 60000);
+        const finalAnswer = await getAICompletion("anthropic/claude-sonnet-4.6", FINAL_DISCUSSION_PROMPT, true, "Anthropic Claude Sonnet", 60000);
 
         if (!finalAnswer) {
           sendUpdate({ status: 'fallback', message: 'Using best individual proposal as synthesis timed out.' });

@@ -94,7 +94,7 @@ Example format:
 
 🎯 The goal is to create a structured, relevant, and time-optimized interview plan for a {{jobTitle}} role.`
 
-export const DISCUSSION_PROMPT = `You are the Lead Interviewer. You have received several sets of interview questions from different high-performance AI models for the following job role and description:
+export const DISCUSSION_PROMPT = `You are the Lead Interviewer and Quality Assurance Specialist. You have received four sets of proposed interview questions from different high-performance AI models for the following job role and description:
 
 Job Title: {{jobTitle}}
 Job Description: {{jobDescription}}
@@ -114,20 +114,32 @@ PROPOSAL 2:
 ---
 PROPOSAL 3:
 {{proposal3}}
+
+---
+PROPOSAL 4:
+{{proposal4}}
 ---
 
 📝 Your Task:
-1. Review all proposals.
-2. Identify the most relevant, high-quality, and unique questions.
-3. Remove any redundant or poorly phrased questions.
-4. Synthesize these into a single, FINAL list of interview questions that best represents the collective intelligence of the group.
-5. Ensure the final number of questions matches the duration:
-   - 5 Minutes: 5 questions
-   - 15 Minutes: 10 questions
-   - 30 Minutes: 20 questions
-   - 60 Minutes: 30 questions
+You are the final gatekeeper. Your job is to critically evaluate these proposed questions and synthesize the absolute best set.
 
-IMPORTANT: Your final list MUST contain ONLY {{type}} questions. If any input proposal contains questions of a different type, you must either discard them or refactor them to be {{type}} questions. Every single question in your final JSON MUST have the type "{{type}}".
+1. CRITIQUE & FILTER: Review all proposed questions. Discard any questions that are:
+   - Too generic (e.g., "Tell me about yourself" if the type is "Technical").
+   - Off-topic for the specific Job Description.
+   - Poorly phrased, confusing, or too easy for the expected seniority level.
+   - NOT of the requested Interview Type ({{type}}).
+
+2. SELECT & ENHANCE: Choose only the most effective, thought-provoking, and practical questions that truly assess the candidate's capabilities. You may combine ideas from different proposals or rephrase questions to make them more impactful and challenging.
+
+3. FINALIZE: Synthesize your choices into a single, cohesive, FINAL list of interview questions.
+
+4. DURATION CONSTRAINTS: Ensure the final number of questions perfectly matches the duration:
+   - 5 Minutes: exactly 5 questions
+   - 15 Minutes: exactly 10 questions
+   - 30 Minutes: exactly 20 questions
+   - 60 Minutes: exactly 30 questions
+
+IMPORTANT: Your final list MUST contain ONLY {{type}} questions. Every single question in your final JSON MUST have the key "type" set to "{{type}}".
 
 🧩 Format your response PRECISELY in JSON format.
 Your entire response must be a single JSON object with a key "interviewQuestions" containing the array of questions.
@@ -136,11 +148,10 @@ Example format:
 {
   "interviewQuestions": [
     {
-      "question": "What is...",
-      "type": "Technical"
-    },
-    ...
+      "question": "Describe a time when you...",
+      "type": "{{type}}"
+    }
   ]
 }
 
-🎯 Deliver the absolute best interview experience for the candidate.`
+🎯 Deliver an interview script that will accurately identify top-tier talent.`
