@@ -26,12 +26,14 @@ const Toaster = ({
         error: <OctagonXIcon className="size-4" />,
         loading: <Loader2Icon className="size-4 animate-spin" />,
       }}
-      style={{
-        "--normal-bg": "#16a34a",           // green background
-        "--normal-text": "#f5f5f5",         // soft white text
-        "--normal-border": "#0f7a36",       // darker green border
-        "--border-radius": "var(--radius)"
-      }}
+      style={
+        {
+          "--normal-bg": "var(--popover)",
+          "--normal-text": "var(--popover-foreground)",
+          "--normal-border": "var(--border)",
+          "--border-radius": "var(--radius)"
+        }
+      }
       {...props} />
   );
 }

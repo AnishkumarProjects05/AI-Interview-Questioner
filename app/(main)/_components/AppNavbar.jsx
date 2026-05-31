@@ -3,7 +3,7 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Plus, LayoutDashboard, List, DockIcon, Menu, X, Moon, Sun, LogOut } from 'lucide-react'
+import { Plus, LayoutDashboard, List, DockIcon, Menu, X, Moon, Sun, LogOut,CircleUser} from 'lucide-react'
 import { SideBarOptions } from '@/services/Constant'
 import { toast } from 'sonner'
 import { useState } from 'react'
@@ -111,6 +111,13 @@ function AppNavbar() {
                                         >
                                             <LogOut className="w-4 h-4" />
                                             Log out
+                                        </button>
+                                        <button
+                                            onClick={()=>router.push('/view-profile')}
+                                            className="w-full px-4 py-3 text-left text-sm font-semibold text-white-600 dark:text-white-400 hover:bg-white-50 dark:hover:bg-white-950/30 flex items-center gap-2 transition-colors cursor-pointer"
+                                        >
+                                            <CircleUser className="w-4 h-4" />
+                                            View Profile
                                         </button>
                                     </div>
                                 </>
