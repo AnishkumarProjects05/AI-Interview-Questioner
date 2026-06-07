@@ -1,6 +1,9 @@
 import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 import { QUESTION_PROMPT, DISCUSSION_PROMPT } from '@/services/Constant';
+import fs from 'fs';
+
+const logPath = 'e:/ai-interview/aimodel-error.log';
 
 const cleanEnvVar = (val) => {
   if (!val) return val;
@@ -10,6 +13,17 @@ const cleanEnvVar = (val) => {
 const openRouterApiKey = cleanEnvVar(
   process.env.OPEN_ROUTER_API_KEY ?? process.env.OPENROUTER_API_KEY
 );
+
+// Obfuscate key for logging
+const keyLog = openRouterApiKey
+  ? `${openRouterApiKey.substring(0, 8)}...${openRouterApiKey.substring(openRouterApiKey.length - 8)}`
+  : 'UNDEFINED';
+
+try {
+  fs.appendFileSync(logPath, `[API Route Init] Loaded key: ${keyLog}\n`);
+} catch (e) {
+  console.error("Failed to write initialization log:", e);
+}
 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -42,6 +56,20 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
       console.log(`[Panel Discussion] ${modelName} has finished.`);
       return completion.choices[0].message.content;
     } catch (error) {
+      // Log to file for visibility
+      try {
+        const errorDetails = `[${new Date().toISOString()}] [${modelName}] ERROR:\n` +
+          `Message: ${error.message}\n` +
+          `Status: ${error.status}\n` +
+          `Code: ${error.code}\n` +
+          `Type: ${error.type}\n` +
+          `Raw: ${JSON.stringify(error, null, 2)}\n` +
+          `ApiKey: ${keyLog}\n\n`;
+        fs.appendFileSync(logPath, errorDetails);
+      } catch (logErr) {
+        console.error("Failed to write error to file log:", logErr);
+      }
+
       // 🔴 DETAILED ERROR LOGGING
       console.error(`[${modelName}] ===== FULL ERROR =====`);
       console.error(`[${modelName}] Message:`, error.message);
