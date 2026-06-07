@@ -2,15 +2,20 @@ import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 import { QUESTION_PROMPT, DISCUSSION_PROMPT } from '@/services/Constant';
 
-const openRouterApiKey = (
+const cleanEnvVar = (val) => {
+  if (!val) return val;
+  return val.trim().replace(/^['"]|['"]$/g, '').trim();
+};
+
+const openRouterApiKey = cleanEnvVar(
   process.env.OPEN_ROUTER_API_KEY ?? process.env.OPENROUTER_API_KEY
-)?.trim();
+);
 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: openRouterApiKey,
   defaultHeaders: {
-    "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    "HTTP-Referer": cleanEnvVar(process.env.NEXT_PUBLIC_APP_URL) || "http://localhost:3000",
     "X-Title": "CareerConnect AI",
   },
 });

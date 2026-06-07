@@ -87,7 +87,7 @@ npm install
 Create a `.env.local` file:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_url
-NEXT_PUBLIC_SUPABASE_KEY=your_key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
 OPEN_ROUTER_API_KEY=your_key
 NEXT_PUBLIC_VAPI_KEY=your_key
 NEXT_ROUTER_INTERVIEW_HOST_ID=https://your-domain.vercel.app/interview
