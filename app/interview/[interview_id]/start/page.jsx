@@ -1,5 +1,5 @@
 "use client"
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import Vapi from '@vapi-ai/web';
 import { InterviewDataContext } from "@/context/InterviewDataContext";
 import { Timer, Mic, Phone, PhoneOff, Video, MicOff, MoreVertical } from "lucide-react";
@@ -20,6 +20,7 @@ function StartInterviewPage() {
     const [activeUser,setActiveUser] = useState(false);
     const [callStatus, setCallStatus] = useState("inactive"); // inactive, connecting, active, error
     const [isMounted, setIsMounted] = useState(false);
+    const transcriptRef = useRef([]);
 
 
     // Simple timer logic
@@ -65,6 +66,14 @@ function StartInterviewPage() {
             setCallStatus("error");
         });
 
+        vapiInstance.on('message', (message) => {
+            if (message.type === 'transcript' && message.transcriptType === 'final') {
+                const roleName = message.role === 'user' ? 'Candidate' : 'Interviewer';
+                transcriptRef.current.push(`${roleName}: ${message.transcript}`);
+                console.log(`[Transcript Log] ${roleName}: ${message.transcript}`);
+            }
+        });
+
         return () => {
             vapiInstance.stop();
         };
@@ -81,6 +90,7 @@ function StartInterviewPage() {
     };
 
     const startCall = () => {
+        transcriptRef.current = [];
         if (!vapi || !interviewInfo) {
             console.error("Cannot start call: Vapi or interviewInfo missing", { vapi: !!vapi, interviewInfo: !!interviewInfo });
             setCallStatus("error");
@@ -140,13 +150,14 @@ function StartInterviewPage() {
                 // Formatting the actual duration spent
                 const actualDuration = Math.floor(time / 60); // minutes
                 
-                console.log("Updating Interview record with duration:", actualDuration);
+                const finalTranscriptText = transcriptRef.current.join("\n");
+                console.log("Updating Interview record with duration and transcript:", actualDuration);
 
                 const { data, error } = await supabase
                     .from('Interviews')
                     .update({ 
                         duration: actualDuration.toString(),
-                        // We can also store the exact seconds if needed, but the table seems to expect minutes
+                        transcript: finalTranscriptText || null
                     })
                     .eq('interview_id', interviewInfo?.interviewData?.interview_id || interviewInfo?.interview_id);
 
