@@ -7,9 +7,11 @@ import { LogIn } from 'lucide-react'
 
 function Login() {
   const signInGoogle = async () => {
+    const redirectToUrl = typeof window !== 'undefined' ? window.location.origin : undefined;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
+        redirectTo: redirectToUrl,
         queryParams: {
           prompt: 'select_account',
         },
