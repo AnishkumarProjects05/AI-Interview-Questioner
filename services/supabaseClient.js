@@ -1,16 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
 
 
-// Create a single supabase client for interacting with your database
+const cleanEnvVar = (val) => {
+  if (!val) return val;
+  return val.trim().replace(/^['"]|['"]$/g, '').trim();
+};
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
+const supabaseUrl = cleanEnvVar(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const supabaseKey = cleanEnvVar(process.env.NEXT_PUBLIC_SUPABASE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 // Robust check: ensure URL is present and starts with http/https
 const isValidUrl = supabaseUrl && (typeof supabaseUrl === 'string') && (supabaseUrl.startsWith('http://') || supabaseUrl.startsWith('https://'));
 
 if (!isValidUrl || !supabaseKey) {
-    console.warn("Supabase credentials missing or invalid. Supabase client will not be initialized correctly.");
+  console.warn("Supabase credentials missing or invalid. Supabase client will not be initialized correctly.");
 }
 
 export const supabase = (() => {
@@ -18,7 +21,7 @@ export const supabase = (() => {
     return null;
   }
   try {
-    return createClient(supabaseUrl.trim(), supabaseKey.trim(), {
+    return createClient(supabaseUrl, supabaseKey, {
       auth: {
         storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
         persistSession: true,
