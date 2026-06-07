@@ -122,8 +122,6 @@ function QuestionList({ formData, onCreateLink }) {
     const GenerateQuestions = async () => {
         setLoading(true);
         try {
-            console.log("Generating questions for:", formData);
-            
             const response = await fetch('/api/aimodel', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -146,7 +144,6 @@ function QuestionList({ formData, onCreateLink }) {
                 for (const line of lines) {
                     try {
                         const data = JSON.parse(line);
-                        console.log("Stream update:", data);
 
                         if (data.status === 'thinking') {
                             toast.info(data.message, {
@@ -181,7 +178,6 @@ function QuestionList({ formData, onCreateLink }) {
                 try { 
                     return JSON.parse(text); 
                 } catch (e) { 
-                    console.log("Direct JSON parse failed, trying regex...");
                 }
 
                 const matchList = text.match(/interviewQuestions\s*=\s*(\[[\s\S]*\])/i);
@@ -189,7 +185,6 @@ function QuestionList({ formData, onCreateLink }) {
                     try {
                         return JSON.parse(matchList[1]);
                     } catch (e) {
-                        console.log("Regex match parse failed, trying manual slice...");
                     }
                 }
 
@@ -201,19 +196,16 @@ function QuestionList({ formData, onCreateLink }) {
                         const sanitized = arrSlice.replace(/,\s*\]/g, ']');
                         return JSON.parse(sanitized); 
                     } catch (e) { 
-                        console.log("Manual slice parse failed.");
                     }
                 }
                 return [];
             };
 
             const parsed = parseJsonLoose(cleaned);
-            console.log("Parsed JSON Object:", parsed);
 
             const questions = parsed?.interviewQuestions ?? (Array.isArray(parsed) ? parsed : []);
             
             if (questions.length === 0) {
-                console.warn("No questions found in parsed data.");
             }
 
             const formattedQuestions = questions.map(q => ({
@@ -221,7 +213,6 @@ function QuestionList({ formData, onCreateLink }) {
                 type: q.type || q.Type || 'General'
             }));
 
-            console.log("Formatted Questions:", formattedQuestions);
             setQuestionList(formattedQuestions);
             return formattedQuestions;
         } catch (error) {

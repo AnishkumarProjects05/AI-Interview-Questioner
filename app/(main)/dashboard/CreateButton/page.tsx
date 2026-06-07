@@ -16,8 +16,6 @@ function CreateInterview() {
   const [interviewId, setinterviewId] = useState();
   const onHandleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    console.log("FormData", formData);
-
   };
   const GoToNext = () => {
     if (Object.keys(formData).length <= 3) {
@@ -29,8 +27,6 @@ function CreateInterview() {
   const onCreateLink = (interview_id) => {
     setinterviewId(interview_id);
     setStep(step + 1);
-    console.log(interview_id);
-        
   }
   return (
     <div className='mt-10 px-10 lg:px-44 xl:px-56 font-inter'>
