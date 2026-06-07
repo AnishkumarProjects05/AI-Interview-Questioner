@@ -8,6 +8,7 @@ import {
 import { useRouter } from "next/navigation";
 import { supabase } from "@/services/supabaseClient";
 import LeetCodeStats from "./leetcodeProfileStat"; // Your stats component
+import GithubProfileStat from "./githubProfileStat";
 
 export default function ViewProfilePage() {
   const router = useRouter();
@@ -244,27 +245,21 @@ export default function ViewProfilePage() {
   </div>
 )}
 
-              {/* GitHub Placeholder Box (Ready for your future code setup) */}
-              <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 min-h-[220px] flex flex-col justify-between">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                    <Github className="w-4 h-4 text-slate-400" /> GitHub Profile Overview
-                  </h3>
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
-                    Active
-                  </span>
+              {/* GitHub Statistics Box */}
+              {formData.githubprofile ? (
+                <GithubProfileStat 
+                  key={formData.githubprofile} 
+                  username={(() => {
+                    const cleanUrl = formData.githubprofile.trim().replace(/\/+$/, "");
+                    const segment = cleanUrl.split("/").pop() || "";
+                    return segment.replace(/\s+/g, "");
+                  })()} 
+                />
+              ) : (
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center text-slate-500 text-sm">
+                  Add GitHub handle link to display metrics preview.
                 </div>
-                <div className="text-center py-4 text-slate-500 text-sm">
-                  {formData.githubprofile ? (
-                    <p className="text-indigo-400 font-medium">
-                      Link synced: {formData.githubprofile.trim().replace(/\/+$/, "").split("/").pop()}
-                    </p>
-                  ) : (
-                    <p>Add GitHub link handle to sync configurations.</p>
-                  )}
-                </div>
-                <p className="text-[11px] text-slate-600 text-right italic">Stats widget integration slot</p>
-              </div>
+              )}
             </div>
           </div>
         )}
