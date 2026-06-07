@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useAutosizeTextareaHeight } from "@/lib/resume/hooks/useAutosizeTextareaHeight";
-import { Bold, Italic, Underline } from "lucide-react";
+import { Bold, Italic, Underline, Link as LinkIcon } from "lucide-react";
 
 interface InputProps<K extends string, V extends string | string[]> {
   label: string;
@@ -97,7 +97,13 @@ export const BulletListTextarea = <T extends string>(
   return <BulletListTextareaGeneral {...props} />;
 };
 
-const RichTextToolbar = ({ onFormat }: { onFormat: (command: string) => void }) => {
+const RichTextToolbar = ({ 
+  onFormat, 
+  onOpenLinkDialog 
+}: { 
+  onFormat: (command: string, value?: string) => void;
+  onOpenLinkDialog: () => void;
+}) => {
   return (
     <div className="flex items-center gap-1 mb-2 bg-gray-50 border border-gray-200 rounded-md p-1 w-fit">
       <button
@@ -123,6 +129,17 @@ const RichTextToolbar = ({ onFormat }: { onFormat: (command: string) => void }) 
         title="Underline (Ctrl+U)"
       >
         <Underline className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onMouseDown={(e) => {
+          e.preventDefault();
+          onOpenLinkDialog();
+        }}
+        className="p-1 hover:bg-gray-200 rounded text-gray-700 transition"
+        title="Insert Link"
+      >
+        <LinkIcon className="w-4 h-4" />
       </button>
     </div>
   );
@@ -170,17 +187,102 @@ const BulletListTextareaGeneral = <T extends string>({
   const html = getHTMLFromBulletListStrings(bulletListStrings);
   const containerRef = useRef<HTMLElement>(null);
 
-  const handleFormat = (command: string) => {
-    document.execCommand(command, false, undefined);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkText, setLinkText] = useState("");
+  const [savedRange, setSavedRange] = useState<Range | null>(null);
+
+  const handleFormat = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
     if (containerRef.current) {
       const newStrings = getBulletListStringsFromHTML(containerRef.current.innerHTML);
       onChange(name, newStrings);
     }
   };
 
+  const openLinkDialog = () => {
+    const sel = window.getSelection();
+    let text = "";
+    let range: Range | null = null;
+    if (sel && sel.rangeCount > 0) {
+      range = sel.getRangeAt(0).cloneRange(); // Clone the range so it is frozen
+      if (range.collapsed) {
+        // Expand selection to the surrounding word
+        const node = range.startContainer;
+        const offset = range.startOffset;
+        if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+          const textContent = node.textContent;
+          const isWordChar = (char: string) => /[\w\-\.]/.test(char);
+          let start = offset;
+          while (start > 0 && isWordChar(textContent[start - 1])) {
+            start--;
+          }
+          let end = offset;
+          while (end < textContent.length && isWordChar(textContent[end])) {
+            end++;
+          }
+          if (start < end) {
+            range.setStart(node, start);
+            range.setEnd(node, end);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          }
+        }
+      }
+      text = range.toString();
+    }
+    setLinkText(text);
+    setLinkUrl("");
+    setSavedRange(range);
+    setShowLinkDialog(true);
+  };
+
+  const handleInsertLink = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!linkUrl) return;
+
+    // Focus the editor element to ensure the command targets it
+    if (containerRef.current) {
+      containerRef.current.focus();
+    }
+
+    if (savedRange) {
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(savedRange);
+      }
+    }
+
+    // Delete existing selection if there was one to prevent duplication
+    const hasSelection = savedRange && !savedRange.collapsed;
+    if (hasSelection) {
+      document.execCommand("delete", false, undefined);
+    }
+
+    let finalUrl = linkUrl.trim();
+    if (finalUrl && !/^https?:\/\//i.test(finalUrl) && !finalUrl.startsWith("/") && !finalUrl.startsWith("mailto:") && !finalUrl.startsWith("tel:")) {
+      finalUrl = "https://" + finalUrl;
+    }
+
+    const displayLinkText = linkText || finalUrl;
+    const htmlToInsert = `<a href="${finalUrl}" target="_blank" style="text-decoration: underline; color: #4f46e5;">${displayLinkText}</a>`;
+    document.execCommand("insertHTML", false, htmlToInsert);
+
+    if (containerRef.current) {
+      const newStrings = getBulletListStringsFromHTML(containerRef.current.innerHTML);
+      onChange(name, newStrings);
+    }
+
+    setShowLinkDialog(false);
+    setLinkUrl("");
+    setLinkText("");
+    setSavedRange(null);
+  };
+
   return (
     <InputGroupWrapper label={label} className={wrapperClassName}>
-      <RichTextToolbar onFormat={handleFormat} />
+      <RichTextToolbar onFormat={handleFormat} onOpenLinkDialog={openLinkDialog} />
       <ContentEditable
         innerRef={containerRef as any}
         contentEditable={true}
@@ -193,6 +295,61 @@ const BulletListTextareaGeneral = <T extends string>({
         }}
         html={html}
       />
+
+      {showLinkDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl p-6 w-full max-w-md space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-white/5">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Insert Hyperlink</h3>
+            </div>
+            
+            <form onSubmit={handleInsertLink} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Text to display</label>
+                <input
+                  type="text"
+                  value={linkText}
+                  onChange={(e) => setLinkText(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-white/10 rounded-lg bg-white dark:bg-slate-950 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                  placeholder="Text to display"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">Address (URL)</label>
+                <input
+                  type="text"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-white/10 rounded-lg bg-white dark:bg-slate-950 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                  placeholder="https://example.com"
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLinkDialog(false);
+                    setSavedRange(null);
+                  }}
+                  className="px-4 py-2 border border-gray-300 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg text-sm transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow-md transition"
+                >
+                  OK
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </InputGroupWrapper>
   );
 };

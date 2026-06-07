@@ -74,7 +74,7 @@ export const ResumePDFText = ({
   );
 };
 
-const renderNodeToReactPDF = (node: ChildNode, idx: number): React.ReactNode => {
+const renderNodeToReactPDF = (node: ChildNode, idx: number, isPDF = false): React.ReactNode => {
   if (node.nodeType === Node.TEXT_NODE) {
     // Strip raw newlines that cause React-PDF staircase nested breaks!
     return (node.textContent || "").replace(/\n/g, ' ');
@@ -97,7 +97,21 @@ const renderNodeToReactPDF = (node: ChildNode, idx: number): React.ReactNode => 
     }
   }
 
-  const childrenNodes = Array.from(node.childNodes).map((child, i) => renderNodeToReactPDF(child, i));
+  const childrenNodes = Array.from(node.childNodes).map((child, i) => renderNodeToReactPDF(child, i, isPDF));
+
+  if (tag === 'a') {
+    const href = el.getAttribute ? el.getAttribute('href') : '';
+    return (
+      <ResumePDFLink
+        key={`link-${idx}`}
+        src={href || ""}
+        isPDF={isPDF}
+        style={{ textDecoration: 'underline', color: '#4f46e5' }}
+      >
+        {childrenNodes as any}
+      </ResumePDFLink>
+    );
+  }
 
   if (Object.keys(inlineStyle).length > 0) {
     return <Text key={`wrap-${idx}`} style={inlineStyle}>{childrenNodes as any}</Text>;
@@ -106,14 +120,14 @@ const renderNodeToReactPDF = (node: ChildNode, idx: number): React.ReactNode => 
   return childrenNodes as any;
 };
 
-export const parseHTMLToReactPDF = (html: string) => {
+export const parseHTMLToReactPDF = (html: string, isPDF = false) => {
   if (typeof window === "undefined" || typeof DOMParser === "undefined") {
     return <Text>{html.replace(/<[^>]+>/g, '').replace(/\n/g, ' ')}</Text>;
   }
   try {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html || "", "text/html");
-    return Array.from(doc.body.childNodes).map((node, i) => renderNodeToReactPDF(node, i));
+    return Array.from(doc.body.childNodes).map((node, i) => renderNodeToReactPDF(node, i, isPDF));
   } catch (e) {
     return <Text>{html.replace(/<[^>]+>/g, '').replace(/\n/g, ' ')}</Text>;
   }
@@ -146,7 +160,7 @@ export const ResumePDFBulletList = ({
           )}
           <View style={{ flex: 1 }}>
             <ResumePDFText style={{ lineHeight: isPDF ? "1.1" : "1.3" }}>
-              {parseHTMLToReactPDF(item)}
+              {parseHTMLToReactPDF(item, isPDF)}
             </ResumePDFText>
           </View>
         </View>
@@ -159,14 +173,16 @@ export const ResumePDFLink = ({
   src,
   isPDF,
   children,
+  style = {},
 }: {
   src: string;
   isPDF: boolean;
   children: React.ReactNode;
+  style?: Style;
 }) => {
   if (isPDF) {
     return (
-      <Link src={src} style={{ textDecoration: "none" }}>
+      <Link src={src} style={{ textDecoration: "none", ...style }}>
         {children}
       </Link>
     );
@@ -174,7 +190,7 @@ export const ResumePDFLink = ({
   return (
     <a
       href={src}
-      style={{ textDecoration: "none" }}
+      style={{ textDecoration: "none", ...style as React.CSSProperties }}
       target="_blank"
       rel="noreferrer"
     >

@@ -25,7 +25,7 @@ function InterviewHistory() {
                 .from('Interviews')
                 .select('*')
                 .eq('userEmail', user?.email)
-                .order('id', { ascending: false });
+                .order('interview_id', { ascending: false });
 
             if (error) {
                 console.error("Error fetching history:", error);
@@ -91,7 +91,7 @@ function InterviewHistory() {
                                 <div className='flex items-center justify-between mt-1'>
                                     <div className='flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider'>
                                         <Calendar className='w-3 h-3' />
-                                        {formatDate(interview.createdAt)}
+                                        {formatDate(interview.Created_at || interview.createdAt)}
                                     </div>
                                     <span className='px-2 py-0.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-black rounded border border-indigo-100 dark:border-indigo-500/10'>
                                         {interview.duration}m
@@ -114,7 +114,7 @@ function InterviewHistory() {
                                 <h2 className='text-3xl font-black text-slate-900 dark:text-white tracking-tight'>{selectedInterview.jobPosition}</h2>
                                 <div className='flex items-center gap-3 mt-3'>
                                     <span className='px-3 py-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-100 dark:border-indigo-500/20 text-[10px] font-black uppercase tracking-widest flex items-center gap-2'>
-                                        <Calendar className='w-3 h-3' /> {formatDate(selectedInterview.createdAt)}
+                                        <Calendar className='w-3 h-3' /> {formatDate(selectedInterview.Created_at || selectedInterview.createdAt)}
                                     </span>
                                     <span className='px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg border border-slate-200 dark:border-white/5 text-[10px] font-black uppercase tracking-widest flex items-center gap-2'>
                                         <Clock className='w-3 h-3' /> {selectedInterview.duration} Min

@@ -2,17 +2,18 @@ const OpenAI = require('openai');
 require('dotenv').config({ path: '.env.local' });
 
 const openai = new OpenAI({
-  baseURL: "https://integrate.api.nvidia.com/v1",
-  apiKey: process.env.NVIDIA_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPEN_ROUTER_API_KEY || process.env.OPENROUTER_API_KEY,
+  defaultHeaders: {
+    "HTTP-Referer": "http://localhost:3000",
+    "X-Title": "CareerConnect AI",
+  }
 });
 
 const models = [
-  { id: "meta/llama-3.1-8b-instruct", name: "Llama 8B" },
-  { id: "mistralai/mistral-7b-instruct-v0.3", name: "Mistral 7B" },
-  { id: "google/gemma-2-9b-it", name: "Gemma 9B" },
-  { id: "qwen/qwen2.5-7b-instruct", name: "Qwen 7B" },
-  { id: "deepseek-ai/deepseek-v3", name: "DeepSeek V3" },
-  { id: "meta/llama-3.3-70b-instruct", name: "Lead Interviewer" }
+  { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash" },
+  { id: "meta-llama/llama-3.3-70b-instruct", name: "Llama 3.3 70B" },
+  { id: "deepseek/deepseek-chat", name: "DeepSeek Chat" }
 ];
 
 async function testModel(model) {
@@ -22,6 +23,7 @@ async function testModel(model) {
     const completion = await openai.chat.completions.create({
       model: model.id,
       messages: [{ role: "user", content: "Say 'Hello' in JSON format: {\"message\": \"Hello\"}" }],
+      max_tokens: 100,
       response_format: { type: "json_object" }
     });
     const duration = Date.now() - start;

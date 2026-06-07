@@ -24,6 +24,7 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
       const completionPromise = openai.chat.completions.create({
         model: model,
         messages: [{ role: "user", content: prompt }],
+        max_tokens: 2000,
         ...(isJson ? { response_format: { type: "json_object" } } : {})
       });
 
@@ -79,10 +80,10 @@ export async function POST(request) {
         sendUpdate({ status: 'thinking', message: 'AI Panel is starting to think...' });
 
         const models = [
-          { id: "openai/gpt-5.5", name: "OpenAI GPT 5" },
-          { id: "google/gemini-3.1-flash-lite", name: "Google Gemini 3.1 Lite" },
-          { id: "anthropic/claude-opus-4.7-fast", name: "Anthropic" },
-          { id: "deepseek/deepseek-v4-pro", name: "DeepSeek v4 Pro" }
+          { id: "meta-llama/llama-3.2-3b-instruct:free", name: "LLaMA 3.2 (Free)" },
+          { id: "google/gemini-3.5-flash", name: "Google Gemini 3.5 Flash" },
+          { id: "deepseek/deepseek-v4-pro", name: "DeepSeek v4 Pro" },
+          { id: "qwen/qwen3.7-plus", name: "Qwen 3.7 Plus" }
         ];
 
         // Step 1: Parallel Generation
@@ -115,7 +116,8 @@ export async function POST(request) {
           .replace('{{proposal3}}', prop3 || "No proposal available")
           .replace('{{proposal4}}', prop4 || "No proposal available");
 
-        const finalAnswer = await getAICompletion("anthropic/claude-sonnet-4.6", FINAL_DISCUSSION_PROMPT, true, "Anthropic Claude Sonnet", 60000);
+        const synthesisModel = "google/gemini-2.5-flash";
+        const finalAnswer = await getAICompletion(synthesisModel, FINAL_DISCUSSION_PROMPT, true, "Google Gemini 2.5 Flash", 60000);
 
         if (!finalAnswer) {
           sendUpdate({ status: 'fallback', message: 'Using best individual proposal as synthesis timed out.' });
@@ -136,3 +138,4 @@ export async function POST(request) {
     headers: { 'Content-Type': 'application/x-ndjson' },
   });
 }
+

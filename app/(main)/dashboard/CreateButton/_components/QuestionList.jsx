@@ -75,12 +75,22 @@ function QuestionList({ formData, onCreateLink }) {
         }
         setSaving(true);
         try {
-            const interview_id = uuidv4();
+            const formattedType = Array.isArray(formData.type) 
+                ? formData.type.join(', ') 
+                : (formData.type ?? '');
+
+            // Generate a unique bigint-compatible ID for the interview
+            const interview_id = Math.floor(Date.now() + Math.random() * 1000);
+
             const payload = {
-                ...formData,
+                jobPosition: formData.jobPosition ?? null,
+                jobDescription: formData.jobDescription ?? null,
+                duration: formData.duration ?? null,
+                type: formattedType,
                 questionList: questions,
                 userEmail: user?.email ?? null,
-                interview_id,
+                user_id: user?.id ?? null,
+                interview_id, // Pass client-generated bigint
             };
             
             if (!supabase) {
@@ -89,15 +99,15 @@ function QuestionList({ formData, onCreateLink }) {
             }
             const { error } = await supabase.from('Interviews').insert([payload]);
             if (error) {
-                console.error(error);
-                toast('Failed to save interview. Please try again.');
+                console.error("Supabase error:", error);
+                toast(`Failed to save: ${error.message} (${error.code})`);
                 return;
             }
             toast('Interview Ready!');
             onCreateLink(interview_id);
         } catch (error) {
-            console.error(error);
-            toast('Server Error: Failed to save interview.');
+            console.error("Server Error:", error);
+            toast(`Server Error: ${error.message || error}`);
         } finally {
             setSaving(false);
         }
