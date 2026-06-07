@@ -42,6 +42,15 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
       console.log(`[Panel Discussion] ${modelName} has finished.`);
       return completion.choices[0].message.content;
     } catch (error) {
+      // 🔴 DETAILED ERROR LOGGING
+      console.error(`[${modelName}] ===== FULL ERROR =====`);
+      console.error(`[${modelName}] Message:`, error.message);
+      console.error(`[${modelName}] Status:`, error.status);
+      console.error(`[${modelName}] Error code:`, error.code);
+      console.error(`[${modelName}] Error type:`, error.type);
+      console.error(`[${modelName}] Raw error:`, JSON.stringify(error, null, 2));
+      console.error(`[${modelName}] =====================`);
+
       const statusMatch = error.message.match(/\b\d{3}\b/);
       const status = statusMatch ? statusMatch[0] : null;
 
@@ -86,12 +95,12 @@ export async function POST(request) {
 
         const models = [
           { id: "meta-llama/llama-3.2-3b-instruct:free", name: "LLaMA 3.2 (Free)" },
-          { id: "google/gemini-3.5-flash", name: "Google Gemini 3.5 Flash" },
-          { id: "deepseek/deepseek-v4-pro", name: "DeepSeek v4 Pro" },
-          { id: "qwen/qwen3.7-plus", name: "Qwen 3.7 Plus" }
+          { id: "google/gemini-2.5-flash", name: "Google Gemini 2.5 Flash" },
+          { id: "deepseek/deepseek-chat", name: "DeepSeek Chat" },
+          { id: "qwen/qwen-2.5-72b-instruct", name: "Qwen 2.5 72B Instruct" }
         ];
 
-        // Step 1: Parallel Generation
+        // Step 1: Parallel Generation  
         const resultPromises = models.map(async (model) => {
           const result = await getAICompletion(model.id, FINAL_PROMPT, true, model.name, 60000);
           if (result) {

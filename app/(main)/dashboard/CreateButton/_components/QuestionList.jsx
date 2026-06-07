@@ -55,7 +55,13 @@ function QuestionList({ formData, onCreateLink }) {
 
     const { user } = useUser();
     useEffect(() => {
-        if (formData) {
+        if (
+            formData &&
+            formData.jobPosition?.trim() &&
+            formData.jobDescription?.trim() &&
+            formData.duration &&
+            Array.isArray(formData.type) && formData.type.length > 0
+        ) {
             GenerateQuestionsAndSave();
         }
     }, [formData]);
