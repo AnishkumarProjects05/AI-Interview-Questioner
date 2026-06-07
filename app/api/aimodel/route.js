@@ -19,10 +19,12 @@ const keyLog = openRouterApiKey
   ? `${openRouterApiKey.substring(0, 8)}...${openRouterApiKey.substring(openRouterApiKey.length - 8)}`
   : 'UNDEFINED';
 
-try {
-  fs.appendFileSync(logPath, `[API Route Init] Loaded key: ${keyLog}\n`);
-} catch (e) {
-  console.error("Failed to write initialization log:", e);
+if (process.env.NODE_ENV === 'development') {
+  try {
+    fs.appendFileSync(logPath, `[API Route Init] Loaded key: ${keyLog}\n`);
+  } catch (e) {
+    console.error("Failed to write initialization log:", e);
+  }
 }
 
 const openai = new OpenAI({
@@ -56,18 +58,20 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
       console.log(`[Panel Discussion] ${modelName} has finished.`);
       return completion.choices[0].message.content;
     } catch (error) {
-      // Log to file for visibility
-      try {
-        const errorDetails = `[${new Date().toISOString()}] [${modelName}] ERROR:\n` +
-          `Message: ${error.message}\n` +
-          `Status: ${error.status}\n` +
-          `Code: ${error.code}\n` +
-          `Type: ${error.type}\n` +
-          `Raw: ${JSON.stringify(error, null, 2)}\n` +
-          `ApiKey: ${keyLog}\n\n`;
-        fs.appendFileSync(logPath, errorDetails);
-      } catch (logErr) {
-        console.error("Failed to write error to file log:", logErr);
+      // Log to file for visibility in development
+      if (process.env.NODE_ENV === 'development') {
+        try {
+          const errorDetails = `[${new Date().toISOString()}] [${modelName}] ERROR:\n` +
+            `Message: ${error.message}\n` +
+            `Status: ${error.status}\n` +
+            `Code: ${error.code}\n` +
+            `Type: ${error.type}\n` +
+            `Raw: ${JSON.stringify(error, null, 2)}\n` +
+            `ApiKey: ${keyLog}\n\n`;
+          fs.appendFileSync(logPath, errorDetails);
+        } catch (logErr) {
+          console.error("Failed to write error to file log:", logErr);
+        }
       }
 
       // 🔴 DETAILED ERROR LOGGING
