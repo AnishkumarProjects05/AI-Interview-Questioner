@@ -194,27 +194,27 @@ function StartInterviewPage() {
         <div className="flex flex-col h-screen bg-[#1a1b1e] overflow-hidden font-inter text-white selection:bg-indigo-500/30">
             
             {/* Minimalist Header */}
-            <header className="flex items-center justify-between px-6 py-4 z-20">
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 group cursor-default">
+            <header className="flex items-center justify-between px-4 sm:px-6 py-4 z-20">
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-1.5 sm:gap-2 group cursor-default">
                         <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/10">
                             <Video className="w-4 h-4 text-white" />
                         </div>
-                        <h1 className="text-sm font-bold tracking-tight text-gray-300 group-hover:text-white transition-colors">AI Interview Session</h1>
+                        <h1 className="text-xs sm:text-sm font-bold tracking-tight text-gray-300 group-hover:text-white transition-colors">AI Interview Session</h1>
                     </div>
-                    <div className="h-4 w-[1px] bg-gray-700 mx-2"></div>
-                    <div className="flex items-center gap-2 px-3 py-1 bg-gray-800/50 rounded-full border border-gray-700/50">
-                        <div className={`w-2 h-2 rounded-full ${callStatus === 'active' ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                    <div className="h-4 w-[1px] bg-gray-700 mx-1.5 sm:mx-2"></div>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-800/50 rounded-full border border-gray-700/50">
+                        <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${callStatus === 'active' ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
+                        <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-400">
                             {callStatus === 'active' ? 'Live' : 'Ready'}
                         </span>
                     </div>
                 </div>
                 
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3 bg-gray-800/80 px-4 py-1.5 rounded-full border border-gray-700/50 shadow-xl">
+                    <div className="flex items-center gap-2 sm:gap-3 bg-gray-800/80 px-3 sm:px-4 py-1.5 rounded-full border border-gray-700/50 shadow-xl">
                         <Timer className="w-3.5 h-3.5 text-indigo-400" />
-                        <span className="font-mono text-sm font-bold text-gray-200">
+                        <span className="font-mono text-xs sm:text-sm font-bold text-gray-200">
                             {formatTime(time)}
                         </span>
                     </div>
@@ -222,19 +222,19 @@ function StartInterviewPage() {
             </header>
 
             {/* Main Video Grid */}
-            <main className="flex-1 px-6 pb-24 flex items-center justify-center relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full max-w-6xl aspect-video lg:aspect-auto h-full max-h-[70vh]">
+            <main className="flex-1 px-4 sm:px-6 pb-28 sm:pb-24 flex items-center justify-center relative z-10 min-h-0">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 w-full max-w-6xl h-full max-h-[65vh] lg:max-h-[70vh] lg:h-auto lg:aspect-video">
                     
                     {/* AI Interviewer Panel */}
                     <div className="relative bg-[#202124] rounded-2xl border border-gray-700/30 overflow-hidden flex items-center justify-center group shadow-2xl transition-all duration-500">
-                        <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded bg-black/40 backdrop-blur-md border border-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-300">
+                        <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded bg-black/40 backdrop-blur-md border border-white/5 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-300">
                             Neural Interviewer
                         </div>
                         
                         {!activeUser ? (
                             <div className="relative w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
                                 <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-[100px]"></div>
-                                <div className="w-32 h-32 md:w-48 md:h-48 rounded-3xl overflow-hidden border-2 border-gray-700 bg-gray-950 relative z-10 shadow-2xl transition-all duration-700 group-hover:scale-105">
+                                <div className="w-24 h-24 sm:w-32 md:w-48 h-24 sm:h-32 md:h-48 rounded-3xl overflow-hidden border-2 border-gray-700 bg-gray-950 relative z-10 shadow-2xl transition-all duration-700 group-hover:scale-105">
                                     <Image
                                         src={'/ai.png'}
                                         alt="AI Recruiter"
@@ -243,18 +243,18 @@ function StartInterviewPage() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="w-full h-full bg-gray-900 flex flex-col items-center justify-center gap-6">
-                                <div className="w-24 h-24 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center animate-pulse">
-                                     <Mic className="w-10 h-10 text-indigo-400" />
+                            <div className="w-full h-full bg-gray-900 flex flex-col items-center justify-center gap-4 sm:gap-6">
+                                <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center animate-pulse">
+                                     <Mic className="w-6 h-6 sm:w-10 sm:h-10 text-indigo-400" />
                                 </div>
-                                <p className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Listening...</p>
+                                <p className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Listening...</p>
                             </div>
                         )}
 
                         {/* Initial State Button */}
                         {callStatus === "inactive" && (
                             <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-500">
-                                <Button onClick={handleStartCall} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-8 py-6 text-lg font-black shadow-2xl transition-all active:scale-95">
+                                <Button onClick={handleStartCall} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-6 py-4 sm:px-8 sm:py-6 text-base sm:text-lg font-black shadow-2xl transition-all active:scale-95">
                                     Join Interview
                                 </Button>
                             </div>
@@ -263,22 +263,22 @@ function StartInterviewPage() {
 
                     {/* Candidate (User) Panel */}
                     <div className="relative bg-[#202124] rounded-2xl border border-gray-700/30 overflow-hidden flex items-center justify-center group shadow-2xl transition-all duration-500">
-                        <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded bg-black/40 backdrop-blur-md border border-white/5 text-[10px] font-bold uppercase tracking-widest text-gray-300">
+                        <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded bg-black/40 backdrop-blur-md border border-white/5 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-300">
                             {interviewInfo?.userName || user?.name || "You"} (Candidate)
                         </div>
                         
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-gray-900 to-gray-800 relative">
                              <div className="absolute inset-0 bg-violet-500/5 rounded-full blur-[100px]"></div>
-                             <div className="w-32 h-32 md:w-48 md:h-48 rounded-full bg-gradient-to-br from-indigo-600 to-violet-700 flex items-center justify-center text-5xl md:text-7xl font-black text-white relative z-10 shadow-2xl transition-transform duration-700 group-hover:scale-105">
+                             <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 rounded-full bg-gradient-to-br from-indigo-600 to-violet-700 flex items-center justify-center text-4xl sm:text-5xl md:text-7xl font-black text-white relative z-10 shadow-2xl transition-transform duration-700 group-hover:scale-105">
                                 {userInitial}
                             </div>
                         </div>
 
                         {/* Status Overlay */}
                         <div className="absolute bottom-4 right-4 z-20">
-                             <div className="flex items-center gap-2 px-2 py-1 bg-black/40 backdrop-blur-md rounded border border-white/5">
+                             <div className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 bg-black/40 backdrop-blur-md rounded border border-white/5">
                                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                                <span className="text-[9px] font-bold uppercase text-gray-400">Stable Link</span>
+                                <span className="text-[8px] sm:text-[9px] font-bold uppercase text-gray-400">Stable Link</span>
                              </div>
                         </div>
                     </div>
@@ -286,10 +286,10 @@ function StartInterviewPage() {
             </main>
 
             {/* Bottom Floating Control Bar */}
-            <footer className="fixed bottom-0 left-0 right-0 p-6 flex flex-col items-center z-50 pointer-events-none">
+            <footer className="fixed bottom-0 left-0 right-0 p-4 sm:p-6 flex flex-col items-center z-50 pointer-events-none">
                 
                 {/* Visual Feedback (Small) */}
-                <div className="mb-4 flex items-center justify-center gap-1.5 px-4 h-8 bg-gray-900/80 backdrop-blur-md border border-gray-700/50 rounded-full pointer-events-auto">
+                <div className="mb-3 sm:mb-4 flex items-center justify-center gap-1.5 px-4 h-8 bg-gray-900/80 backdrop-blur-md border border-gray-700/50 rounded-full pointer-events-auto">
                     {[1, 2, 3, 4, 5, 6, 7].map((i) => (
                         <div
                             key={i}
@@ -302,33 +302,33 @@ function StartInterviewPage() {
                     ))}
                 </div>
 
-                <div className="flex items-center gap-4 bg-[#202124] p-3 md:p-4 rounded-full border border-gray-700/50 shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto transition-transform hover:scale-[1.02] duration-300">
+                <div className="flex items-center gap-2 sm:gap-4 bg-[#202124] p-2 sm:p-3 md:p-4 rounded-full border border-gray-700/50 shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto transition-transform hover:scale-[1.02] duration-300">
                     <button 
                         onClick={() => setIsMuted(!isMuted)}
-                        className={`p-3.5 rounded-full transition-all active:scale-95 group ${isMuted ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600 border border-gray-600/50 hover:text-white'}`}
+                        className={`p-2.5 sm:p-3.5 rounded-full transition-all active:scale-95 group ${isMuted ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600 border border-gray-600/50 hover:text-white'}`}
                     >
-                        {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                        {isMuted ? <MicOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Mic className="h-4 w-4 sm:h-5 sm:w-5" />}
                     </button>
                     
                     <button 
-                        className="p-3.5 bg-gray-700/50 text-gray-300 rounded-full hover:bg-gray-600 hover:text-white border border-gray-600/50 transition-all active:scale-95"
+                        className="p-2.5 sm:p-3.5 bg-gray-700/50 text-gray-300 rounded-full hover:bg-gray-600 hover:text-white border border-gray-600/50 transition-all active:scale-95"
                     >
-                        <Video className="h-5 w-5" />
+                        <Video className="h-4 w-4 sm:h-5 sm:w-5" />
                     </button>
 
-                    <div className="w-[1px] h-6 bg-gray-700 mx-1"></div>
+                    <div className="w-[1px] h-6 bg-gray-700 mx-0.5 sm:mx-1"></div>
 
                     <AlertCallConfirmation stopInterview={() => stopInterviewCall()}>
-                        <button className="p-4 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 active:scale-95 group px-8 flex items-center gap-2">
-                            <PhoneOff className="h-5 w-5" />
-                            <span className="text-xs font-black uppercase tracking-widest hidden md:block">Leave Call</span>
+                        <button className="p-3 sm:p-4 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 active:scale-95 group px-4 sm:px-8 flex items-center gap-2">
+                            <PhoneOff className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest hidden md:block">Leave Call</span>
                         </button>
                     </AlertCallConfirmation>
 
-                    <div className="w-[1px] h-6 bg-gray-700 mx-1"></div>
+                    <div className="w-[1px] h-6 bg-gray-700 mx-0.5 sm:mx-1"></div>
 
-                    <button className="p-3.5 bg-gray-700/50 text-gray-300 rounded-full hover:bg-gray-600 hover:text-white border border-gray-600/50 transition-all active:scale-95">
-                        <MoreVertical className="h-5 w-5" />
+                    <button className="p-2.5 sm:p-3.5 bg-gray-700/50 text-gray-300 rounded-full hover:bg-gray-600 hover:text-white border border-gray-600/50 transition-all active:scale-95">
+                        <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
                     </button>
                 </div>
             </footer>

@@ -68,26 +68,26 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
         <div className='bg-white dark:bg-slate-900/40 backdrop-blur-2xl rounded-2xl border border-slate-200 dark:border-white/5 shadow-2xl shadow-indigo-100 dark:shadow-black/50 overflow-hidden font-inter transition-colors duration-500'>
 
             {/* Header Section */}
-            <div className='bg-gradient-to-br from-indigo-50 dark:from-indigo-600/20 to-transparent p-10 border-b border-slate-200 dark:border-white/5 relative overflow-hidden group'>
+            <div className='bg-gradient-to-br from-indigo-50 dark:from-indigo-600/20 to-transparent p-6 sm:p-10 border-b border-slate-200 dark:border-white/5 relative overflow-hidden group'>
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-[100px] -mr-20 -mt-20 group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
 
-                <div className="relative z-10 flex items-center gap-5">
-                    <div className='p-4 bg-indigo-600 rounded-xl text-white shadow-xl shadow-indigo-500/20 border-t border-white/10'>
-                        <Sparkles className='w-7 h-7' />
+                <div className="relative z-10 flex items-center gap-3 sm:gap-5">
+                    <div className='p-3 sm:p-4 bg-indigo-600 rounded-xl text-white shadow-xl shadow-indigo-500/20 border-t border-white/10'>
+                        <Sparkles className='w-5 h-5 sm:w-7 sm:h-7' />
                     </div>
                     <div>
-                        <h1 className='text-3xl font-black text-slate-900 dark:text-white tracking-tight'>Session Architect</h1>
-                        <p className='text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mt-1'>
+                        <h1 className='text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight'>Session Architect</h1>
+                        <p className='text-slate-400 dark:text-slate-500 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] mt-1'>
                             Define your performance parameters
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className='p-8 space-y-10'>
+            <div className='p-5 sm:p-8 space-y-6 sm:space-y-10'>
 
                 {/* Job Details Section */}
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8'>
 
                     {/* Job Position */}
                     <div className='space-y-3'>
@@ -142,7 +142,7 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
                         Specialization Nodes <span className='text-slate-600 lowercase ml-2'>(multi-select)</span>
                     </label>
 
-                    <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+                    <div className='grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4'>
                         {InterviewType.map((type, index) => {
                             const isActive = selectedType.includes(type.title);
                             return (
@@ -150,7 +150,7 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
                                     key={index}
                                     onClick={() => addInterviewType(type.title)}
                                     className={`
-                                        cursor-pointer relative p-5 rounded-xl border transition-all duration-500 flex flex-col items-center justify-center gap-3 text-center group overflow-hidden
+                                        cursor-pointer relative p-4 sm:p-5 rounded-xl border transition-all duration-500 flex flex-col items-center justify-center gap-3 text-center group overflow-hidden
                                         ${isActive
                                             ? 'border-indigo-500/50 bg-indigo-500/5 dark:bg-indigo-500/10 shadow-lg shadow-indigo-500/5'
                                             : 'border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/40 hover:bg-white dark:hover:bg-slate-900 hover:border-indigo-200 dark:hover:border-white/10'
@@ -178,7 +178,7 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
                     <Button
                         variant="default"
                         size="lg"
-                        className='w-full h-16 text-lg bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black shadow-2xl shadow-indigo-500/20 border-t border-white/10 transition-all active:scale-[0.98] group/btn flex items-center justify-center gap-3'
+                        className='w-full h-14 sm:h-16 text-base sm:text-lg bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black shadow-2xl shadow-indigo-500/20 border-t border-white/10 transition-all active:scale-[0.98] group/btn flex items-center justify-center gap-3'
                         onClick={handleGoToNext}
                     >
                         Initialize Question Matrix
