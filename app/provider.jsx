@@ -121,7 +121,7 @@ function Provider({ children }) {
             return;
         }
 
-        console.log("Existing user fetched and set:", Users[0]);
+
         setUser(Users[0]);
     }
 
