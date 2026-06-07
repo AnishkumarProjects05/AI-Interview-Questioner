@@ -12,6 +12,7 @@ import { ResumeTable } from "./ResumeTable";
 import { FlexboxSpacer } from "@/components/resume/FlexboxSpacer";
 import { ResumeParserAlgorithmArticle } from "./ResumeParserAlgorithmArticle";
 import React from 'react';
+import { FileText, Database } from "lucide-react";
 
 const RESUME_EXAMPLES = [
   {
@@ -41,6 +42,8 @@ const defaultFileUrl = RESUME_EXAMPLES[0]["fileUrl"];
 export function ResumeParserComponent() {
   const [fileUrl, setFileUrl] = useState(defaultFileUrl);
   const [textItems, setTextItems] = useState<TextItems>([]);
+  const [activeTab, setActiveTab] = useState<"pdf" | "results">("results");
+  
   const lines = groupTextItemsIntoLines(textItems || []);
   const sections = groupLinesIntoSections(lines);
   const resume = extractResumeFromSections(sections);
@@ -54,22 +57,26 @@ export function ResumeParserComponent() {
   }, [fileUrl]);
 
   return (
-    <main className="h-full w-full overflow-hidden">
-      <div className="grid md:grid-cols-6">
-        <div className="flex justify-center px-2 md:col-span-3 md:h-[calc(100vh-var(--top-nav-bar-height))] md:justify-end">
-        <section className="mt-5 grow px-4 md:max-w-[600px] md:px-0">
-  <iframe
-    src={`${fileUrl}#navpanes=0&view=FitH`}
-    className="h-full w-full"
-    style={{ minHeight: "85vh" }}
-    title="Resume preview"
-  />
-</section>
+    <main className="h-full w-full md:overflow-hidden overflow-y-auto bg-slate-50 dark:bg-slate-950 relative">
+      <div className="grid grid-cols-1 md:grid-cols-6 h-full md:h-auto">
+        
+        {/* LEFT PANEL — PDF preview */}
+        <div className={`flex justify-center px-2 col-span-1 md:col-span-3 h-auto md:h-[calc(100vh-var(--top-nav-bar-height))] md:justify-end w-full ${activeTab === "pdf" ? "block" : "hidden md:block"}`}>
+          <section className="mt-5 grow px-4 md:max-w-[600px] md:px-0 w-full">
+            <iframe
+              src={`${fileUrl}#navpanes=0&view=FitH`}
+              className="w-full"
+              style={{ minHeight: "75vh", height: "100%" }}
+              title="Resume preview"
+            />
+          </section>
           <FlexboxSpacer maxWidth={45} className="hidden md:block" />
         </div>
-        <div className="flex px-6 text-gray-900 md:col-span-3 md:h-[calc(100vh-var(--top-nav-bar-height))] md:overflow-y-scroll">
+
+        {/* RIGHT PANEL — Description and table */}
+        <div className={`flex px-6 text-gray-900 col-span-1 md:col-span-3 h-auto md:h-[calc(100vh-var(--top-nav-bar-height))] md:overflow-y-scroll overflow-visible pb-24 md:pb-12 ${activeTab === "results" ? "block" : "hidden md:block"}`}>
           <FlexboxSpacer maxWidth={45} className="hidden md:block" />
-          <section className="max-w-[600px] grow">
+          <section className="max-w-[600px] grow w-full">
             <Heading className="text-primary !mt-4">
               Resume Parser Playground
             </Heading>
@@ -105,9 +112,35 @@ export function ResumeParserComponent() {
               Resume Parsing Results
             </Heading>
             <ResumeTable resume={resume} />
-
           </section>
         </div>
+
+      </div>
+
+      {/* FLOATING MOBILE SWITCHER */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-full p-1.5 shadow-2xl shadow-indigo-500/10 flex items-center gap-1.5 transition-all">
+        <button
+          onClick={() => setActiveTab("results")}
+          className={`px-5 py-2.5 rounded-full text-xs font-black tracking-wider uppercase transition-all duration-300 flex items-center gap-2 ${
+            activeTab === "results"
+              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+              : "text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+          }`}
+        >
+          <Database className="w-3.5 h-3.5" />
+          Results
+        </button>
+        <button
+          onClick={() => setActiveTab("pdf")}
+          className={`px-5 py-2.5 rounded-full text-xs font-black tracking-wider uppercase transition-all duration-300 flex items-center gap-2 ${
+            activeTab === "pdf"
+              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+              : "text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          PDF
+        </button>
       </div>
     </main>
   );
