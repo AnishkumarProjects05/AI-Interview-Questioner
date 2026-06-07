@@ -46,7 +46,7 @@ function Options() {
         <div className="text-center space-y-2">
           <Phone className="w-6 h-6 text-slate-400 mx-auto" />
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Behavioral Coach</p>
-          <p className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-1 rounded-full w-fit mx-auto">Coming Soon</p>
+          <p className="text-[10px] text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-full w-fit mx-auto group-hover/builder:bg-indigo-100 dark:group-hover/builder:bg-indigo-900/50 transition-colors">Coming Soon</p>
         </div>
       </div>
 
@@ -65,7 +65,7 @@ function Options() {
         <div className="text-center space-y-2">
           <FileText className="w-6 h-6 text-slate-400 mx-auto group-hover/builder:text-indigo-500 transition-colors" />
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resume Builder</p>
-          <p className="text-[10px] text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-full w-fit mx-auto group-hover/builder:bg-indigo-100 dark:group-hover/builder:bg-indigo-900/50 transition-colors">Create Now</p>
+          <p className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-1 rounded-full w-fit mx-auto">Currently Available</p>
         </div>
       </Link>
 
@@ -74,3 +74,5 @@ function Options() {
 }
 
 export default Options
+
+
