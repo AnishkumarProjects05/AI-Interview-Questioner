@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/services/supabaseClient";
 import LeetCodeStats from "./leetcodeProfileStat"; // Your stats component
 import GithubProfileStat from "./githubProfileStat";
+import { toast } from "sonner";
 
 export default function ViewProfilePage() {
   const router = useRouter();
@@ -103,10 +104,10 @@ export default function ViewProfilePage() {
         await supabase.from("user_details").insert(payload);
       }
       
-      alert("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
       setIsEditing(false); // Switch out of edit mode back to dashboard stats preview!
     } catch (err) {
-      alert(`Failed to save changes: ${err.message}`);
+      toast.error(`Failed to save changes: ${err.message}`);
     } finally {
       setSaving(false);
     }
