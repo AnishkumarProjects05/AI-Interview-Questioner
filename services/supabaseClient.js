@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 
 
 const cleanEnvVar = (val) => {
@@ -21,13 +21,7 @@ export const supabase = (() => {
     return null;
   }
   try {
-    return createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
-        persistSession: true,
-        autoRefreshToken: true,
-      }
-    });
+    return createBrowserClient(supabaseUrl, supabaseKey);
   } catch (e) {
     console.error("Failed to initialize Supabase client:", e.message);
     return null;

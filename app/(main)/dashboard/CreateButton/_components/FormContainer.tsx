@@ -150,7 +150,7 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
                                     key={index}
                                     onClick={() => addInterviewType(type.title)}
                                     className={`
-                                        cursor-pointer relative p-4 sm:p-5 rounded-xl border transition-all duration-500 flex flex-col items-center justify-center gap-3 text-center group overflow-hidden
+                                        cursor-pointer relative p-3 sm:p-5 rounded-xl border transition-all duration-500 flex flex-col items-center justify-center gap-2 sm:gap-3 text-center group overflow-hidden
                                         ${isActive
                                             ? 'border-indigo-500/50 bg-indigo-500/5 dark:bg-indigo-500/10 shadow-lg shadow-indigo-500/5'
                                             : 'border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/40 hover:bg-white dark:hover:bg-slate-900 hover:border-indigo-200 dark:hover:border-white/10'
@@ -160,7 +160,7 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
                                     <div className={`p-3 rounded-lg transition-all duration-700 ${isActive ? 'bg-indigo-500 text-white shadow-xl shadow-indigo-500/40' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:scale-110'}`}>
                                         <type.icon className="h-5 w-5" />
                                     </div>
-                                    <span className={`text-[11px] font-black tracking-widest uppercase ${isActive ? 'text-indigo-400' : 'text-slate-500'}`}>
+                                    <span className={`text-[10px] sm:text-[11px] font-black tracking-wider sm:tracking-widest uppercase ${isActive ? 'text-indigo-400' : 'text-slate-500'}`}>
                                         {type.title}
                                     </span>
 

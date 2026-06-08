@@ -19,8 +19,26 @@ function Provider({ children }) {
         const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         setTheme(savedTheme);
         document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+
+        if (!supabase) return;
+
+        // Hydrate initial user
         CreateNewUser();
-    }, [])
+
+        // Listen for auth state changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+                CreateNewUser();
+            } else if (event === 'SIGNED_OUT') {
+                setUser(null);
+                router.replace('/auth');
+            }
+        });
+
+        return () => {
+            subscription?.unsubscribe();
+        };
+    }, []);
 
     const toggleTheme = () => {
         const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -28,26 +46,6 @@ function Provider({ children }) {
         localStorage.setItem('theme', newTheme);
         document.documentElement.classList.toggle('dark', newTheme === 'dark');
     }
-
-    useEffect(() => {
-        // Handle redirection after user state is updated or when pathname changes
-        if (user) {
-            // If logged in and on /auth or /, go to dashboard
-            if (pathname === '/auth' || pathname === '/') {
-                router.replace('/dashboard');
-            }
-        } else if (!user && pathname !== '/auth') {
-            // If NOT logged in and trying to access any page other than /auth, go to auth
-            const checkAuth = async () => {
-                if (!supabase) return;
-                const { data } = await supabase.auth.getUser();
-                if (!data?.user) {
-                    router.replace('/auth');
-                }
-            };
-            checkAuth();
-        }
-    }, [user, pathname]);
 
     // Build a safe row so we don't insert nulls when metadata keys differ by provider
     const mapAuthUserToRow = (authUser) => {

@@ -29,7 +29,7 @@ function CreateInterview() {
     setStep(step + 1);
   }
   return (
-    <div className='mt-10 px-10 lg:px-44 xl:px-56 font-inter'>
+    <div className='mt-4 sm:mt-10 px-0 sm:px-10 lg:px-44 xl:px-56 font-inter'>
       <div className='flex gap-5 items-center mb-6'>
         <button 
           onClick={() => router.back()} 
@@ -37,7 +37,7 @@ function CreateInterview() {
         >
           <ArrowLeft className='w-5 h-5' />
         </button>
-        <h2 className='text-3xl font-black text-slate-900 dark:text-white tracking-tight'>Session Architect</h2>
+        <h2 className='text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight'>Session Architect</h2>
       </div>
       <Progress value={step * 33.33} className='h-2 mb-10' />
 

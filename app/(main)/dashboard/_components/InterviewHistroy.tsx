@@ -66,7 +66,7 @@ function InterviewHistroy() {
                     ))}
                 </div>
             ) : tableError ? (
-                <div className='flex flex-col gap-4 items-center mt-12 p-10 bg-amber-50 rounded-2xl border border-amber-200 text-amber-800 text-center max-w-2xl mx-auto'>
+                <div className='flex flex-col gap-4 items-center mt-12 p-6 sm:p-10 bg-amber-50 rounded-2xl border border-amber-200 text-amber-800 text-center max-w-2xl mx-auto'>
                     <h2 className='text-xl font-bold'>Database Table Missing</h2>
                     <p className='text-sm'>
                         To show your history, you need to create the <code>InterviewHistory</code> table in your Supabase project.
@@ -83,7 +83,7 @@ function InterviewHistroy() {
                     </div>
                 </div>
             ) : interviewlist?.length === 0 ? (
-                <div className='flex flex-col gap-4 items-center mt-12 p-10 bg-white rounded-2xl shadow-sm border border-dashed border-gray-300'>
+                <div className='flex flex-col gap-4 items-center mt-12 p-6 sm:p-10 bg-white rounded-2xl shadow-sm border border-dashed border-gray-300'>
                     <Video className='w-12 h-12 text-gray-400' />
                     <h2 className='text-gray-500 font-medium'>You have not attended any interviews yet.</h2>
                 </div>
