@@ -5,7 +5,7 @@ function DashboardProvider({ children }) {
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-indigo-600/10">
         <AppNavbar />
-        <main className="max-w-7xl mx-auto px-6 py-10 animate-in fade-in duration-700">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 animate-in fade-in duration-700">
             {children}
         </main>
         

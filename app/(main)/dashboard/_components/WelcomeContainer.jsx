@@ -8,7 +8,7 @@ function WelcomeContainer() {
 
   return (
     <div className='w-full'>
-      <div className='relative overflow-hidden bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-10 font-inter shadow-xl shadow-indigo-100 dark:shadow-indigo-500/10 group transition-all hover:border-indigo-500/20 dark:hover:border-indigo-500/30'>
+      <div className='relative overflow-hidden bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-10 font-inter shadow-xl shadow-indigo-100 dark:shadow-indigo-500/10 group transition-all hover:border-indigo-500/20 dark:hover:border-indigo-500/30'>
 
         {/* Decorative Glows */}
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-50 dark:bg-indigo-600/10 rounded-full blur-[100px] -mr-40 -mt-40 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-600/20 transition-all duration-1000"></div>

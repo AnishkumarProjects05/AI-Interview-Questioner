@@ -225,7 +225,7 @@ function QuestionList({ formData, onCreateLink }) {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center p-16 bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-white/5 shadow-2xl shadow-indigo-100 dark:shadow-black/50 space-y-10 animate-in fade-in zoom-in duration-700 font-inter relative overflow-hidden transition-colors duration-500">
+        <div className="flex flex-col items-center justify-center p-6 sm:p-16 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[3rem] border border-slate-200 dark:border-white/5 shadow-2xl shadow-indigo-100 dark:shadow-black/50 space-y-10 animate-in fade-in zoom-in duration-700 font-inter relative overflow-hidden transition-colors duration-500">
             
             {/* Background Decoration */}
             <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-50 dark:bg-slate-800 rounded-full blur-3xl opacity-40 -mr-10 -mt-10"></div>
@@ -239,7 +239,7 @@ function QuestionList({ formData, onCreateLink }) {
             </div>
 
             <div className="text-center space-y-3 relative z-10">
-                <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                <h2 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
                     {saving ? 'Finalizing Your Session...' : 'AI is Crafting Questions...'}
                 </h2>
                 <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium leading-relaxed">

@@ -109,7 +109,7 @@ function InterviewHistory() {
                     <div className='bg-white dark:bg-slate-900 w-full max-w-3xl max-h-[85vh] rounded-2xl border border-slate-200 dark:border-white/5 shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300'>
                         
                         {/* Modal Header */}
-                        <div className='p-8 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50'>
+                        <div className='p-5 sm:p-8 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50'>
                             <div>
                                 <h2 className='text-3xl font-black text-slate-900 dark:text-white tracking-tight'>{selectedInterview.jobPosition}</h2>
                                 <div className='flex items-center gap-3 mt-3'>
@@ -130,7 +130,7 @@ function InterviewHistory() {
                         </div>
 
                         {/* Modal Body */}
-                        <div className='flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar'>
+                        <div className='flex-1 overflow-y-auto p-5 sm:p-8 space-y-6 sm:space-y-10 custom-scrollbar'>
                             
                             {/* Job Description */}
                             {selectedInterview.jobDescription && (
@@ -181,7 +181,7 @@ function InterviewHistory() {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className='p-8 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/50 flex justify-end gap-4'>
+                        <div className='p-5 sm:p-8 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/50 flex justify-end gap-4'>
                             <button 
                                 onClick={() => setSelectedInterview(null)}
                                 className='px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm'
