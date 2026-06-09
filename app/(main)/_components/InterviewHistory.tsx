@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from 'react'
-import { Camera, Video, Clock, Calendar, Briefcase, ListTodo, X, FileText, Sparkles } from 'lucide-react';
+import { Camera, Video, Clock, Calendar, Briefcase, ListTodo, X, FileText, Sparkles, MessageCircle } from 'lucide-react';
 import { supabase } from '@/services/supabaseClient';
 import { useUser } from '@/app/provider';
 import { toast } from 'sonner';
@@ -178,25 +178,67 @@ function InterviewHistory() {
                                     )}
                                 </div>
                             </section>
+
+                            {/* Session Transcript */}
+                            {selectedInterview.transcript && (
+                                <section className='space-y-4 border-t border-slate-100 dark:border-white/5 pt-8'>
+                                    <h3 className='flex items-center gap-3 font-black text-slate-900 dark:text-white text-lg'>
+                                        <MessageCircle className='w-5 h-5 text-indigo-600 dark:text-indigo-500' />
+                                        Session Transcript
+                                    </h3>
+                                    <div className='bg-slate-50 dark:bg-slate-950/50 p-6 rounded-xl border border-slate-100 dark:border-white/5 space-y-4 max-h-[350px] overflow-y-auto custom-scrollbar flex flex-col'>
+                                        {selectedInterview.transcript.split('\n').map((line, idx) => {
+                                            const isUser = line.startsWith('Candidate:');
+                                            const cleanLine = line.replace(/^(Candidate|Interviewer):\s*/, '');
+                                            if (!cleanLine.trim()) return null;
+                                            return (
+                                                <div key={idx} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} w-full`}>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                                                        {isUser ? 'Candidate' : 'Interviewer'}
+                                                    </span>
+                                                    <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ${
+                                                        isUser 
+                                                            ? 'bg-indigo-600 text-white rounded-tr-none font-semibold' 
+                                                            : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 text-slate-800 dark:text-slate-200 rounded-tl-none font-medium'
+                                                    }`}>
+                                                        {cleanLine}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </section>
+                            )}
                         </div>
 
                         {/* Modal Footer */}
-                        <div className='p-5 sm:p-8 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/50 flex justify-end gap-4'>
-                            <button 
-                                onClick={() => setSelectedInterview(null)}
-                                className='px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm'
-                            >
-                                Close
-                            </button>
+                        <div className='p-5 sm:p-8 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/50 flex flex-col sm:flex-row justify-end gap-3'>
+                            {selectedInterview.transcript && (
+                                <button 
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(selectedInterview.transcript);
+                                        toast.success("Transcript copied to clipboard!");
+                                    }}
+                                    className='px-6 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/5 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm active:scale-95 text-center'
+                                >
+                                    Copy Transcript
+                                </button>
+                            )}
                             <button 
                                 onClick={() => {
                                     const text = selectedInterview.questionList.map((q, i) => `${i+1}. ${q.question}`).join('\n');
                                     navigator.clipboard.writeText(text);
                                     toast.success("Copied to clipboard!");
                                 }}
-                                className='px-6 py-3 bg-indigo-600 text-white rounded-xl font-black hover:bg-indigo-700 shadow-xl shadow-indigo-200 dark:shadow-indigo-500/20 transition-all active:scale-95'
+                                className='px-6 py-3 bg-indigo-600 text-white rounded-xl font-black hover:bg-indigo-700 shadow-xl shadow-indigo-200 dark:shadow-indigo-500/20 transition-all active:scale-95 text-center'
                             >
                                 Copy Questions
+                            </button>
+                            <button 
+                                onClick={() => setSelectedInterview(null)}
+                                className='px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm text-center'
+                            >
+                                Close
                             </button>
                         </div>
                     </div>

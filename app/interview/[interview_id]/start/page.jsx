@@ -153,6 +153,7 @@ function StartInterviewPage() {
                 const finalTranscriptText = transcriptRef.current.join("\n");
                 console.log("Updating Interview record with duration and transcript:", actualDuration);
 
+                // Update the primary Interviews table
                 const { data, error } = await supabase
                     .from('Interviews')
                     .update({ 
@@ -167,6 +168,23 @@ function StartInterviewPage() {
                 } else {
                     console.log("Interview Updated Successfully");
                     toast("Meeting Ended and Saved Successfully");
+                }
+
+                // Safe backup insert to legacy/alternative InterviewHistory table
+                try {
+                    await supabase
+                        .from('InterviewHistory')
+                        .insert([
+                            {
+                                userEmail: user?.email || interviewInfo?.userEmail || null,
+                                jobPosition: interviewInfo?.interviewData?.jobPosition || interviewInfo?.jobPosition || null,
+                                questionList: interviewInfo?.interviewData?.questionList || interviewInfo?.questionList || null,
+                                duration: actualDuration,
+                                transcript: finalTranscriptText || null
+                            }
+                        ]);
+                } catch (histErr) {
+                    console.warn("Legacy InterviewHistory table backup insert failed (this is fine if table structure differs):", histErr);
                 }
             } catch (err) {
                 console.error("Unexpected error updating interview:", err);
