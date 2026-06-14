@@ -128,7 +128,17 @@ function QuestionList({ formData, onCreateLink }) {
                 body: JSON.stringify(formData),
             });
 
-            if (!response.ok) throw new Error('Failed to start generation');
+            if (!response.ok) {
+                if (response.status === 429) {
+                    try {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Too many requests. Please try again later.');
+                    } catch (e) {
+                        throw new Error(e.message || 'Rate limit exceeded. Please try again later.');
+                    }
+                }
+                throw new Error('Failed to start generation');
+            }
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -217,7 +227,7 @@ function QuestionList({ formData, onCreateLink }) {
             return formattedQuestions;
         } catch (error) {
             console.error(error);
-            toast.error('Error generating questions. Please try again.');
+            toast.error(error.message || 'Error generating questions. Please try again.');
             return [];
         } finally {
             setLoading(false);
