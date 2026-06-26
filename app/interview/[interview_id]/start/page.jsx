@@ -70,7 +70,7 @@ function StartInterviewPage() {
             if (message.type === 'transcript' && message.transcriptType === 'final') {
                 const roleName = message.role === 'user' ? 'Candidate' : 'Interviewer';
                 transcriptRef.current.push(`${roleName}: ${message.transcript}`);
-                console.log(`[Transcript Log] ${roleName}: ${message.transcript}`);
+                
             }
         });
 
@@ -137,7 +137,7 @@ function StartInterviewPage() {
                 ],
             },
         };
-        console.log("Assistant Options:", JSON.stringify(assistantOptions, null, 2));
+       
         vapi.start(assistantOptions);
 
     }

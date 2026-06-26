@@ -45,22 +45,10 @@ function AppNavbar() {
                                 <Link
                                     key={index}
                                     href={option.path}
-                                    onClick={(e) => {
-                                        if (option.name === "Resume-JD Analyzer") {
-                                            e.preventDefault();
-                                            toast.info("Feature Coming Soon!", {
-                                                description: "We are working hard to bring this feature to life.",
-                                                className: "bg-slate-900 border-indigo-500/20 text-white"
-                                            });
-                                        }
-                                    }}
                                     className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors group"
                                 >
                                     <Icon className="w-4 h-4 group-hover:scale-110 transition-transform" />
                                     <span>{option.name}</span>
-                                    {option.name === "Resume-JD Analyzer" && (
-                                        <span className="px-1.5 py-0.5 bg-indigo-100 text-[8px] text-indigo-600 rounded border border-indigo-200 uppercase font-black">Soon</span>
-                                    )}
                                 </Link>
                             )
                         })}
@@ -178,17 +166,7 @@ function AppNavbar() {
                                 <Link
                                     key={index}
                                     href={option.path}
-                                    onClick={(e) => {
-                                        if (option.name === "Resume-JD Analyzer") {
-                                            e.preventDefault();
-                                            toast.info("Feature Coming Soon!", {
-                                                description: "We are working hard to bring this feature to life.",
-                                                className: "bg-slate-900 border-indigo-500/20 text-white"
-                                            });
-                                        } else {
-                                            setIsMenuOpen(false);
-                                        }
-                                    }}
+                                    onClick={() => setIsMenuOpen(false)}
                                     className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900 group transition-all"
                                 >
                                     <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
@@ -196,9 +174,6 @@ function AppNavbar() {
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">{option.name}</span>
-                                        {option.name === "Resume-JD Analyzer" && (
-                                            <span className="text-[8px] bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full w-fit uppercase font-black mt-1">Coming Soon</span>
-                                        )}
                                     </div>
                                 </Link>
                             )

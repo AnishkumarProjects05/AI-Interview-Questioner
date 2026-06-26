@@ -42,15 +42,6 @@ export function AppSidebar() {
                   <SidebarMenuButton 
                     asChild 
                     className="h-12 px-4 rounded-xl hover:bg-blue-50 text-gray-500 hover:text-blue-600 transition-all group"
-                    onClick={(e) => {
-                      if (option.name === "Resume-JD Analyzer") {
-                        e.preventDefault();
-                        toast.info("Feature Coming Soon!", {
-                          description: "We are working hard to bring the Resume-JD Analyzer to you. Stay tuned!",
-                          className: "font-poppins bg-white border-blue-100 shadow-2xl",
-                        });
-                      }
-                    }}
                   >
                     <Link href={option.path} className="flex items-center gap-3 w-full">
                       <div className="p-2 rounded-lg group-hover:bg-white shadow-sm transition-all">
@@ -58,9 +49,6 @@ export function AppSidebar() {
                       </div>
                       <span className="font-bold text-sm tracking-tight">
                         {option.name}
-                        {option.name === "Resume-JD Analyzer" && (
-                          <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-[8px] text-blue-600 rounded-md font-black uppercase">Soon</span>
-                        )}
                       </span>
                     </Link>
                   </SidebarMenuButton>

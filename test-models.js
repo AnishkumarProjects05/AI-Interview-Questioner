@@ -1,5 +1,14 @@
 const OpenAI = require('openai');
-require('dotenv').config({ path: '.env.local' });
+try {
+  const fs = require('fs');
+  if (fs.existsSync('.env.local')) {
+    require('dotenv').config({ path: '.env.local' });
+  } else {
+    require('dotenv').config();
+  }
+} catch (err) {
+  // dotenv package not installed; rely on pre-loaded process.env
+}
 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",

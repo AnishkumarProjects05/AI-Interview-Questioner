@@ -78,7 +78,11 @@ function Provider({ children }) {
         if (!supabase) return;
         const { data: authData, error: authError } = await supabase.auth.getUser();
         if (authError) {
-            console.error("Auth error:", authError);
+            if (authError.name === 'AuthSessionMissingError' || authError.status === 400) {
+                console.log("No active user session (unauthenticated).");
+            } else {
+                console.error("Auth error:", authError);
+            }
             return;
         }
 
