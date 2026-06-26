@@ -1,20 +1,9 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+import OpenAI from 'openai';
+import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 export async function POST(request) {
-  const tempDir = os.tmpdir();
-  let tempPdfPath = null;
-  let tempConfigPath = null;
-
   try {
-    // Ensure temp directory exists
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-
     const formData = await request.formData();
     const file = formData.get('resume');
     const jobDescription = formData.get('jobDescription');
@@ -26,55 +15,114 @@ export async function POST(request) {
       );
     }
 
-    // Save uploaded PDF file to temp folder
+    // 1. Read PDF file into buffer and extract text in-memory
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const safeFileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    tempPdfPath = path.join(tempDir, safeFileName);
-    fs.writeFileSync(tempPdfPath, buffer);
-
-    // Save job description and PDF path to a temporary JSON configuration file
-    // This avoids terminal command-line length limits and shell escaping issues
-    const configData = {
-      pdfPath: tempPdfPath,
-      jobDescription: jobDescription,
-    };
-    tempConfigPath = path.join(tempDir, `config-${Date.now()}.json`);
-    fs.writeFileSync(tempConfigPath, JSON.stringify(configData, null, 2), 'utf-8');
-
-    // Execute the Python script
-    const pythonScriptPath = path.join(process.cwd(), 'app', 'api', 'analyze-resume', 'training.py');
-    const command = `python "${pythonScriptPath}" "${tempConfigPath}"`;
-
-    console.log(`[API Route] Running command: ${command}`);
-
-    const result = await new Promise((resolve, reject) => {
-      exec(command, { maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`[API Route] Exec error:`, error);
-          console.error(`[API Route] Stderr:`, stderr);
-          reject(new Error(stderr || error.message));
-          return;
-        }
-        resolve(stdout);
-      });
-    });
-
-    console.log('[API Route] Python output received.');
     
-    // Find the JSON block in Python output (in case there's extra print statements)
-    const stdoutStr = result.toString();
-    const jsonStart = stdoutStr.indexOf('{');
-    const jsonEnd = stdoutStr.lastIndexOf('}');
-    
-    if (jsonStart === -1 || jsonEnd === -1) {
-      console.error('[API Route] Raw Python Output:', stdoutStr);
-      throw new Error('Python output did not contain a valid JSON block.');
+    let resumeText = "";
+    try {
+      const data = new Uint8Array(buffer);
+      const pdfFile = await pdfjs.getDocument({ data }).promise;
+      for (let i = 1; i <= pdfFile.numPages; i++) {
+        const page = await pdfFile.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(" ");
+        resumeText += pageText + "\n";
+      }
+      resumeText = resumeText.trim();
+    } catch (pdfError) {
+      console.error("PDF parsing error:", pdfError);
+      return NextResponse.json(
+        { error: `Failed to parse PDF resume: ${pdfError.message}` },
+        { status: 500 }
+      );
     }
 
-    const jsonString = stdoutStr.substring(jsonStart, jsonEnd + 1);
-    const parsedResult = JSON.parse(jsonString);
+    if (!resumeText) {
+      return NextResponse.json(
+        { error: 'Could not extract any text content from the uploaded resume.' },
+        { status: 400 }
+      );
+    }
 
+    // 2. Configure OpenAI client (fallback from OpenRouter to Google Gemini API compatibility)
+    let openai;
+    let modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+
+    const openRouterApiKey = process.env.OPEN_ROUTER_API_KEY || process.env.OPENROUTER_API_KEY;
+    const googleApiKey = process.env.GOOGLE_API_KEY;
+
+    if (openRouterApiKey) {
+      openai = new OpenAI({
+        baseURL: "https://openrouter.ai/api/v1",
+        apiKey: openRouterApiKey.trim().replace(/^['"]|['"]$/g, ''),
+        defaultHeaders: {
+          "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+          "X-Title": "CareerConnect AI",
+        },
+      });
+      // Prepend google/ for OpenRouter if not already present
+      if (!modelName.includes("/")) {
+        modelName = "google/" + modelName;
+      }
+    } else if (googleApiKey) {
+      // Use direct Gemini API (OpenAI compatibility layer)
+      openai = new OpenAI({
+        baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+        apiKey: googleApiKey.trim().replace(/^['"]|['"]$/g, ''),
+      });
+    } else {
+      return NextResponse.json(
+        { error: 'AI provider API key missing. Please configure OPEN_ROUTER_API_KEY or GOOGLE_API_KEY in your environment.' },
+        { status: 500 }
+      );
+    }
+
+    // 3. Build Prompt Template (EXACTLY mirroring training.py)
+    const promptTemplate = `
+    You are an expert technical recruiter analyzing a target Job Description against a specific candidate's resume.
+    
+    Job Description:
+    ${jobDescription}
+    
+    Candidate Resume:
+    ${resumeText}
+    
+    Perform a strict, realistic skill evaluation based ONLY on the provided resume.
+    Calculate an accurate skill match percentage (0-100) based on how well their skills, experience, and tools align with the requirements.
+    
+    You must output a clean, valid JSON object with exactly the following structure:
+    {
+        "candidate_name": "Extract candidate name if present, else use Unknown",
+        "skill_match_percentage": 85,
+        "matched_skills": ["skill1", "skill2"],
+        "missing_skills": ["skill3"],
+        "justification": "A brief sentence explaining the percentage evaluation score."
+    }
+    `;
+
+    // 4. Request completion with temperature 0.0 and JSON response format (EXACTLY mirroring training.py)
+    const completion = await openai.chat.completions.create({
+      model: modelName,
+      messages: [{ role: "user", content: promptTemplate }],
+      temperature: 0.0,
+      response_format: { type: "json_object" }
+    });
+
+    let rawContent = completion.choices[0].message.content.trim();
+    
+    // CLEANUP: Strip out markdown formatting if the model accidentally includes it (EXACTLY mirroring training.py)
+    if (rawContent.startsWith("```json")) {
+      rawContent = rawContent.substring(7);
+    } else if (rawContent.startsWith("```")) {
+      rawContent = rawContent.substring(3);
+    }
+    if (rawContent.endsWith("```")) {
+      rawContent = rawContent.substring(0, rawContent.length - 3);
+    }
+    rawContent = rawContent.trim();
+
+    const parsedResult = JSON.parse(rawContent);
     return NextResponse.json(parsedResult);
 
   } catch (error) {
@@ -83,17 +131,5 @@ export async function POST(request) {
       { error: error.message || 'An error occurred during resume analysis.' },
       { status: 500 }
     );
-  } finally {
-    // Clean up temporary files
-    try {
-      if (tempPdfPath && fs.existsSync(tempPdfPath)) {
-        fs.unlinkSync(tempPdfPath);
-      }
-      if (tempConfigPath && fs.existsSync(tempConfigPath)) {
-        fs.unlinkSync(tempConfigPath);
-      }
-    } catch (cleanupError) {
-      console.error('[API Route] Failed to clean up temp files:', cleanupError);
-    }
   }
 }
