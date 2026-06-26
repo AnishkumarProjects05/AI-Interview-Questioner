@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
+// Mock DOMMatrix on the server to prevent pdfjs-dist/pdf-parse loading errors in Node
+if (typeof global.DOMMatrix === 'undefined') {
+  global.DOMMatrix = class DOMMatrix {};
+}
+
 export async function POST(request) {
   try {
     const formData = await request.formData();
