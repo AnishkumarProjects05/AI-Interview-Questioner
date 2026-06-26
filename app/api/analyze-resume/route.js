@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
 export async function POST(request) {
-  const tempDir = path.join(process.cwd(), 'tmp');
+  const tempDir = os.tmpdir();
   let tempPdfPath = null;
   let tempConfigPath = null;
 
