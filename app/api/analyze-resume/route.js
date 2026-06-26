@@ -26,27 +26,52 @@ export async function POST(request) {
     let resumeText = "";
     try {
       const pdfModule = await import('pdf-parse');
-      let pdfParser;
       
-      if (typeof pdfModule === 'function') {
-        pdfParser = pdfModule;
-      } else if (pdfModule && typeof pdfModule.default === 'function') {
-        pdfParser = pdfModule.default;
-      } else if (pdfModule && pdfModule.default && typeof pdfModule.default.default === 'function') {
-        pdfParser = pdfModule.default.default;
+      // Check for v2 PDFParse class
+      let PDFParseClass = pdfModule.PDFParse || (pdfModule.default && pdfModule.default.PDFParse);
+      
+      if (PDFParseClass) {
+        // v2 class-based syntax
+        const parser = new PDFParseClass({ data: buffer });
+        const parsedData = await parser.getText();
+        await parser.destroy();
+        resumeText = parsedData.text || "";
       } else {
-        // Fallback to native Node.js require resolver
-        const { createRequire } = await import('module');
-        const require = createRequire(import.meta.url);
-        pdfParser = require('pdf-parse');
+        // Fallback: Check if the module is a direct function (v1 functional syntax)
+        let pdfParser = typeof pdfModule === 'function' ? pdfModule : (pdfModule.default || pdfModule);
+        if (pdfParser && typeof pdfParser.default === 'function') {
+          pdfParser = pdfParser.default;
+        }
+        
+        if (typeof pdfParser !== 'function') {
+          // Fallback to createRequire legacy loader
+          const { createRequire } = await import('module');
+          const require = createRequire(import.meta.url);
+          const legacyImport = require('pdf-parse');
+          
+          if (legacyImport.PDFParse) {
+            // legacy import resolved as v2 CJS
+            const parser = new legacyImport.PDFParse({ data: buffer });
+            const parsedData = await parser.getText();
+            await parser.destroy();
+            resumeText = parsedData.text || "";
+          } else if (typeof legacyImport === 'function') {
+            // legacy import resolved as v1 CJS function
+            const parsedData = await legacyImport(buffer);
+            resumeText = parsedData.text || "";
+          } else if (legacyImport && typeof legacyImport.default === 'function') {
+            const parsedData = await legacyImport.default(buffer);
+            resumeText = parsedData.text || "";
+          } else {
+            throw new Error("Could not resolve any usable PDF parsing function or class from pdf-parse.");
+          }
+        } else {
+          // Resolved as v1 functional parser
+          const parsedData = await pdfParser(buffer);
+          resumeText = parsedData.text || "";
+        }
       }
-
-      if (typeof pdfParser !== 'function') {
-        throw new Error("Could not resolve pdf-parse as a function.");
-      }
-
-      const parsedData = await pdfParser(buffer);
-      resumeText = parsedData.text || "";
+      
       resumeText = resumeText.trim();
     } catch (pdfError) {
       console.error("PDF parsing error:", pdfError);
