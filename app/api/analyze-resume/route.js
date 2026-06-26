@@ -25,8 +25,27 @@ export async function POST(request) {
     
     let resumeText = "";
     try {
-      const pdf = (await import('pdf-parse')).default;
-      const parsedData = await pdf(buffer);
+      const pdfModule = await import('pdf-parse');
+      let pdfParser;
+      
+      if (typeof pdfModule === 'function') {
+        pdfParser = pdfModule;
+      } else if (pdfModule && typeof pdfModule.default === 'function') {
+        pdfParser = pdfModule.default;
+      } else if (pdfModule && pdfModule.default && typeof pdfModule.default.default === 'function') {
+        pdfParser = pdfModule.default.default;
+      } else {
+        // Fallback to native Node.js require resolver
+        const { createRequire } = await import('module');
+        const require = createRequire(import.meta.url);
+        pdfParser = require('pdf-parse');
+      }
+
+      if (typeof pdfParser !== 'function') {
+        throw new Error("Could not resolve pdf-parse as a function.");
+      }
+
+      const parsedData = await pdfParser(buffer);
       resumeText = parsedData.text || "";
       resumeText = resumeText.trim();
     } catch (pdfError) {
