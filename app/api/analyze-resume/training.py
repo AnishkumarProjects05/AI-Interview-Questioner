@@ -9,6 +9,9 @@ from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 import io
 from pypdf import PdfReader
+# pyrefly: ignore [missing-import]
+from google.colab import files
+
 print("Successfully Imported Packages")
 def load_env():
     # Attempt to load .env files manually if they are not already loaded into os.environ
@@ -203,7 +206,7 @@ def evaluate_single_resume(job_description: str, resume_text: str):
 def upload_and_extract_resume() -> str:
     print("Please select your resume file (PDF format preferred):")
     # This opens the interactive file picker widget in Colab (imported inline)
-    from google.colab import files
+
     uploaded = files.upload()
     
     if not uploaded:

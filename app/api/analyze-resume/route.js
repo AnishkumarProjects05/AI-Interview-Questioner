@@ -25,20 +25,10 @@ export async function POST(request) {
     
     let resumeText = "";
     try {
-      const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-      const data = new Uint8Array(buffer);
-      const pdfFile = await pdfjs.getDocument({
-        data,
-        disableWorker: true,
-        verbosity: 0 // Suppress verbose logging
-      }).promise;
-      
-      for (let i = 1; i <= pdfFile.numPages; i++) {
-        const page = await pdfFile.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => item.str).join(" ");
-        resumeText += pageText + "\n";
-      }
+      const { getDocumentProxy, extractText } = await import('unpdf');
+      const pdf = await getDocumentProxy(new Uint8Array(buffer));
+      const { text } = await extractText(pdf);
+      resumeText = text || "";
       resumeText = resumeText.trim();
     } catch (pdfError) {
       console.error("PDF parsing error:", pdfError);
