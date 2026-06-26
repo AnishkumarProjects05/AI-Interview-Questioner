@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 export async function POST(request) {
   try {
@@ -21,6 +20,7 @@ export async function POST(request) {
     
     let resumeText = "";
     try {
+      const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
       const data = new Uint8Array(buffer);
       const pdfFile = await pdfjs.getDocument({ data }).promise;
       for (let i = 1; i <= pdfFile.numPages; i++) {
