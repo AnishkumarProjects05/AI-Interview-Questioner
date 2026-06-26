@@ -25,53 +25,20 @@ export async function POST(request) {
     
     let resumeText = "";
     try {
-      const pdfModule = await import('pdf-parse');
+      const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+      const data = new Uint8Array(buffer);
+      const pdfFile = await pdfjs.getDocument({
+        data,
+        disableWorker: true,
+        verbosity: 0 // Suppress verbose logging
+      }).promise;
       
-      // Check for v2 PDFParse class
-      let PDFParseClass = pdfModule.PDFParse || (pdfModule.default && pdfModule.default.PDFParse);
-      
-      if (PDFParseClass) {
-        // v2 class-based syntax
-        const parser = new PDFParseClass({ data: buffer });
-        const parsedData = await parser.getText();
-        await parser.destroy();
-        resumeText = parsedData.text || "";
-      } else {
-        // Fallback: Check if the module is a direct function (v1 functional syntax)
-        let pdfParser = typeof pdfModule === 'function' ? pdfModule : (pdfModule.default || pdfModule);
-        if (pdfParser && typeof pdfParser.default === 'function') {
-          pdfParser = pdfParser.default;
-        }
-        
-        if (typeof pdfParser !== 'function') {
-          // Fallback to createRequire legacy loader
-          const { createRequire } = await import('module');
-          const require = createRequire(import.meta.url);
-          const legacyImport = require('pdf-parse');
-          
-          if (legacyImport.PDFParse) {
-            // legacy import resolved as v2 CJS
-            const parser = new legacyImport.PDFParse({ data: buffer });
-            const parsedData = await parser.getText();
-            await parser.destroy();
-            resumeText = parsedData.text || "";
-          } else if (typeof legacyImport === 'function') {
-            // legacy import resolved as v1 CJS function
-            const parsedData = await legacyImport(buffer);
-            resumeText = parsedData.text || "";
-          } else if (legacyImport && typeof legacyImport.default === 'function') {
-            const parsedData = await legacyImport.default(buffer);
-            resumeText = parsedData.text || "";
-          } else {
-            throw new Error("Could not resolve any usable PDF parsing function or class from pdf-parse.");
-          }
-        } else {
-          // Resolved as v1 functional parser
-          const parsedData = await pdfParser(buffer);
-          resumeText = parsedData.text || "";
-        }
+      for (let i = 1; i <= pdfFile.numPages; i++) {
+        const page = await pdfFile.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(" ");
+        resumeText += pageText + "\n";
       }
-      
       resumeText = resumeText.trim();
     } catch (pdfError) {
       console.error("PDF parsing error:", pdfError);
