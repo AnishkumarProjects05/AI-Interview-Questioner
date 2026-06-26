@@ -27,7 +27,7 @@ export async function POST(request) {
     try {
       const { getDocumentProxy, extractText } = await import('unpdf');
       const pdf = await getDocumentProxy(new Uint8Array(buffer));
-      const { text } = await extractText(pdf);
+      const { text } = await extractText(pdf, { mergePages: true });
       resumeText = text || "";
       resumeText = resumeText.trim();
     } catch (pdfError) {
