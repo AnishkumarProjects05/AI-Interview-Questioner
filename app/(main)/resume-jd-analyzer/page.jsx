@@ -11,7 +11,9 @@ import {
   FileSearch2,
   RefreshCw,
   Award,
-  BookOpen
+  BookOpen,
+  Download,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +26,35 @@ export default function ResumeJdAnalyzerPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStage, setLoadingStage] = useState("");
   const [results, setResults] = useState(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  const handleDownloadReport = async () => {
+    if (!results) return;
+    setIsGeneratingPdf(true);
+    try {
+      const { pdf } = await import('@react-pdf/renderer');
+      const { ResumeReportPDF } = await import('@/components/resume/ResumeReportPDF');
+      
+      const logoUrl = typeof window !== 'undefined' ? `${window.location.origin}/logo.png` : '/logo.png';
+      
+      const blob = await pdf(<ResumeReportPDF results={results} logoUrl={logoUrl} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const fileName = `${(results.candidate_name || 'Candidate').replace(/[^a-zA-Z0-9]/g, '_')}_Resume_Report.pdf`;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("PDF report downloaded successfully!");
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast.error("Failed to generate PDF report.");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   // Drag handlers
   const handleDrag = (e) => {
@@ -160,18 +191,38 @@ export default function ResumeJdAnalyzerPage() {
             </p>
           </div>
           {results && (
-            <Button
-              onClick={() => {
-                setResults(null);
-                setFile(null);
-                setJobDescription("");
-              }}
-              variant="outline"
-              className="border-indigo-100 hover:bg-indigo-50 dark:border-white/10 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400 font-bold transition-all flex items-center gap-2"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Reset Form
-            </Button>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={handleDownloadReport}
+                disabled={isGeneratingPdf}
+                className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold shadow-md hover:shadow-indigo-500/20 transition-all flex items-center gap-2"
+              >
+                {isGeneratingPdf ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    Download PDF Report
+                  </>
+                )}
+              </Button>
+
+              <Button
+                onClick={() => {
+                  setResults(null);
+                  setFile(null);
+                  setJobDescription("");
+                }}
+                variant="outline"
+                className="border-indigo-100 hover:bg-indigo-50 dark:border-white/10 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400 font-bold transition-all flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Reset Form
+              </Button>
+            </div>
           )}
         </div>
 
@@ -409,6 +460,28 @@ export default function ResumeJdAnalyzerPage() {
                   "{results.justification || "No justification provided."}"
                 </p>
               </div>
+            </div>
+
+            {/* BOTTOM ACTIONS BAR */}
+            <div className="flex justify-end pt-2">
+              <Button
+                onClick={handleDownloadReport}
+                disabled={isGeneratingPdf}
+                size="lg"
+                className="bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:from-indigo-700 hover:to-blue-800 text-white font-black px-8 py-6 rounded-xl shadow-lg hover:shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5 flex items-center gap-3 text-base"
+              >
+                {isGeneratingPdf ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Generating Official PDF Report...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-5 h-5" />
+                    Download PDF Report
+                  </>
+                )}
+              </Button>
             </div>
 
           </div>
