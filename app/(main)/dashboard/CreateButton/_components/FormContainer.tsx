@@ -9,29 +9,46 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { InterviewType } from '@/services/Constant'
-import { ArrowRight, Briefcase, Clock, FileText, Sparkles } from 'lucide-react'
+import { ArrowRight, Briefcase, Clock, FileText, Sparkles, UploadCloud, CheckCircle2, FileCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { readPdf } from '@/lib/resume/parse-resume-from-pdf/read-pdf'
+import { parseResumeFromPdf } from '@/lib/resume/parse-resume-from-pdf'
 
 function FormContainer({ onHandleInputChange, GoToNext }) {
-    // State to handle the selected Interview Type
+    const [interviewMode, setInterviewMode] = useState('jobDescription'); // 'jobDescription' | 'resume'
     const [selectedType, setSelectedType] = useState([]);
+    
+    // State for resume upload
+    const [resumeFile, setResumeFile] = useState(null);
+    const [isExtracting, setIsExtracting] = useState(false);
+    const [resumeSummary, setResumeSummary] = useState(null);
 
-    // ✅ Track form values locally for validation
+    // Track form values locally for validation
     const [formValues, setFormValues] = useState({
         jobPosition: '',
         jobDescription: '',
         duration: '',
+        resumeContent: '',
     });
 
     useEffect(() => {
-        onHandleInputChange('type', selectedType);
-    }, [selectedType])
+        onHandleInputChange('interviewMode', interviewMode);
+    }, [interviewMode]);
 
-    // ✅ Unified change handler that updates both local state and parent
+    useEffect(() => {
+        onHandleInputChange('type', selectedType);
+    }, [selectedType]);
+
+    // Unified change handler that updates both local state and parent
     const handleChange = (key, value) => {
         setFormValues(prev => ({ ...prev, [key]: value }));
         onHandleInputChange(key, value);
+    };
+
+    const handleModeSwitch = (mode) => {
+        setInterviewMode(mode);
+        onHandleInputChange('interviewMode', mode);
     };
 
     const addInterviewType = (type) => {
@@ -41,24 +58,99 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
             const result = selectedType.filter(item => item !== type);
             setSelectedType(result);
         }
-    }
+    };
 
-    // ✅ Validate all fields before proceeding
-    const handleGoToNext = () => {
-        if (!formValues.jobPosition.trim()) {
-            toast.error('Please enter a job position.');
+    const handleFileUpload = async (file) => {
+        if (!file) return;
+        if (!file.name.endsWith('.pdf')) {
+            toast.error('Please upload a valid PDF resume file.');
             return;
         }
-        if (!formValues.jobDescription.trim()) {
+
+        setResumeFile(file);
+        setIsExtracting(true);
+        const toastId = toast.loading('Extracting data entirely from resume...');
+
+        try {
+            const fileUrl = URL.createObjectURL(file);
+            const textItems = await readPdf(fileUrl);
+            const fullRawText = textItems.map(item => item.text).join(' ');
+
+            let structured = null;
+            try {
+                structured = await parseResumeFromPdf(fileUrl);
+            } catch (err) {
+                console.warn('Structured extraction warning:', err);
+            }
+
+            const candidateName = structured?.profile?.name || '';
+            const profileTitle = structured?.profile?.summary || '';
+            const expCount = structured?.workExperiences?.length || 0;
+            const skillList = structured?.skills?.descriptions || [];
+
+            const combinedContent = `
+=== CANDIDATE RESUME SUMMARY ===
+Candidate Name: ${candidateName || 'Not specified'}
+Work Experiences Found: ${expCount}
+Key Skills Listed: ${skillList.join(', ')}
+
+=== ENTIRE EXTRACTED RESUME CONTENT ===
+${fullRawText}
+            `.trim();
+
+            handleChange('resumeContent', combinedContent);
+            handleChange('jobDescription', `[Candidate Resume Interview] ${file.name} - ${expCount} Experiences, ${skillList.length} Skills detected.`);
+            
+            // Auto-fill position if currently empty
+            if (!formValues.jobPosition && candidateName) {
+                handleChange('jobPosition', `${candidateName}'s Resume Interview`);
+            } else if (!formValues.jobPosition) {
+                handleChange('jobPosition', 'Candidate Resume Mock Interview');
+            }
+
+            setResumeSummary({
+                fileName: file.name,
+                expCount,
+                skillCount: skillList.length,
+                characterCount: fullRawText.length
+            });
+
+            toast.success('Resume extracted successfully!', { id: toastId });
+        } catch (error) {
+            console.error('Error parsing PDF resume:', error);
+            toast.error('Failed to extract text from resume PDF.', { id: toastId });
+        } finally {
+            setIsExtracting(false);
+        }
+    };
+
+    const removeResumeFile = () => {
+        setResumeFile(null);
+        setResumeSummary(null);
+        handleChange('resumeContent', '');
+        handleChange('jobDescription', '');
+    };
+
+    // Validate all fields before proceeding
+    const handleGoToNext = () => {
+        if (!formValues.jobPosition.trim()) {
+            toast.error('Please enter a target position or candidate title.');
+            return;
+        }
+        if (interviewMode === 'jobDescription' && !formValues.jobDescription.trim()) {
             toast.error('Please enter a job description.');
             return;
         }
+        if (interviewMode === 'resume' && (!resumeFile || !formValues.resumeContent)) {
+            toast.error('Please upload and extract a candidate resume PDF.');
+            return;
+        }
         if (!formValues.duration) {
-            toast.error('Please select a duration.');
+            toast.error('Please select an interview duration.');
             return;
         }
         if (selectedType.length === 0) {
-            toast.error('Please select at least one interview type.');
+            toast.error('Please select at least one interview type specialization.');
             return;
         }
         GoToNext();
@@ -71,15 +163,45 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
             <div className='bg-gradient-to-br from-indigo-50 dark:from-indigo-600/20 to-transparent p-6 sm:p-10 border-b border-slate-200 dark:border-white/5 relative overflow-hidden group'>
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-[100px] -mr-20 -mt-20 group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
 
-                <div className="relative z-10 flex items-center gap-3 sm:gap-5">
-                    <div className='p-3 sm:p-4 bg-indigo-600 rounded-xl text-white shadow-xl shadow-indigo-500/20 border-t border-white/10'>
-                        <Sparkles className='w-5 h-5 sm:w-7 sm:h-7' />
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                    <div className="flex items-center gap-3 sm:gap-5">
+                        <div className='p-3 sm:p-4 bg-indigo-600 rounded-xl text-white shadow-xl shadow-indigo-500/20 border-t border-white/10'>
+                            <Sparkles className='w-5 h-5 sm:w-7 sm:h-7' />
+                        </div>
+                        <div>
+                            <h1 className='text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight'>Session Architect</h1>
+                            <p className='text-slate-400 dark:text-slate-500 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] mt-1'>
+                                Define your performance parameters
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className='text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight'>Session Architect</h1>
-                        <p className='text-slate-400 dark:text-slate-500 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] mt-1'>
-                            Define your performance parameters
-                        </p>
+
+                    {/* Mode Toggle Switch */}
+                    <div className='flex items-center p-1.5 bg-slate-200/60 dark:bg-slate-950/80 rounded-xl border border-slate-300/50 dark:border-white/10 shadow-inner self-start sm:self-auto'>
+                        <button
+                            type="button"
+                            onClick={() => handleModeSwitch('jobDescription')}
+                            className={`px-4 py-2.5 rounded-lg text-xs font-black transition-all duration-300 flex items-center gap-2 ${
+                                interviewMode === 'jobDescription'
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                            }`}
+                        >
+                            <Briefcase className="w-3.5 h-3.5" />
+                            By Job Description
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleModeSwitch('resume')}
+                            className={`px-4 py-2.5 rounded-lg text-xs font-black transition-all duration-300 flex items-center gap-2 ${
+                                interviewMode === 'resume'
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                            }`}
+                        >
+                            <FileText className="w-3.5 h-3.5" />
+                            By Candidate Resume
+                        </button>
                     </div>
                 </div>
             </div>
@@ -93,11 +215,12 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
                     <div className='space-y-3'>
                         <label className='flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1'>
                             <Briefcase className='w-3.5 h-3.5 text-indigo-500' />
-                            Target Position
+                            {interviewMode === 'resume' ? 'Target Position / Candidate Role' : 'Target Position'}
                         </label>
                         <Input
                             type="text"
-                            placeholder="Ex. Lead Systems Engineer"
+                            value={formValues.jobPosition}
+                            placeholder={interviewMode === 'resume' ? "Ex. Senior Fullstack Engineer" : "Ex. Lead Systems Engineer"}
                             className="h-14 bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 rounded-xl focus:bg-white dark:focus:bg-slate-950 focus:border-indigo-500/50 focus:ring-indigo-500/20 transition-all font-bold text-slate-900 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-inner"
                             onChange={(event) => handleChange('jobPosition', event.target.value)}
                         />
@@ -123,18 +246,78 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
                     </div>
                 </div>
 
-                {/* Description */}
-                <div className='space-y-3'>
-                    <label className='flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1'>
-                        <FileText className='w-3.5 h-3.5 text-indigo-500' />
-                        Contextual Intel <span className='lowercase opacity-50'>(Job Description)</span>
-                    </label>
-                    <Textarea
-                        placeholder="Neural engine needs context... Paste technical requirements or role summary here."
-                        className="min-h-[160px] bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 rounded-xl focus:bg-white dark:focus:bg-slate-950 focus:border-indigo-500/50 focus:ring-indigo-500/20 transition-all resize-none p-6 font-medium text-slate-800 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-700 shadow-inner"
-                        onChange={(event) => handleChange('jobDescription', event.target.value)}
-                    />
-                </div>
+                {/* Mode Specific Inputs */}
+                {interviewMode === 'jobDescription' ? (
+                    /* Job Description Input */
+                    <div className='space-y-3'>
+                        <label className='flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1'>
+                            <FileText className='w-3.5 h-3.5 text-indigo-500' />
+                            Contextual Intel <span className='lowercase opacity-50'>(Job Description)</span>
+                        </label>
+                        <Textarea
+                            placeholder="Neural engine needs context... Paste technical requirements or role summary here."
+                            className="min-h-[160px] bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-white/10 rounded-xl focus:bg-white dark:focus:bg-slate-950 focus:border-indigo-500/50 focus:ring-indigo-500/20 transition-all resize-none p-6 font-medium text-slate-800 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-700 shadow-inner"
+                            onChange={(event) => handleChange('jobDescription', event.target.value)}
+                        />
+                    </div>
+                ) : (
+                    /* Candidate Resume Upload Dropzone */
+                    <div className='space-y-3'>
+                        <label className='flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1'>
+                            <UploadCloud className='w-3.5 h-3.5 text-indigo-500' />
+                            Candidate Resume PDF Upload
+                        </label>
+
+                        {!resumeFile ? (
+                            <div className="relative border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 bg-slate-50/50 dark:bg-slate-950/30 rounded-2xl p-8 text-center transition-all duration-300 group cursor-pointer">
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <div className="flex flex-col items-center justify-center gap-3">
+                                    <div className="p-4 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                                        <UploadCloud className="w-8 h-8" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                                            Click or drop candidate PDF resume here
+                                        </p>
+                                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                                            AI will extract entire text, projects, and work history automatically.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="bg-indigo-500/5 dark:bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-6 relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-indigo-600 text-white rounded-xl">
+                                        <FileCheck className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
+                                            {resumeSummary?.fileName}
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                        </h4>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                            Extracted {resumeSummary?.characterCount || 0} characters • {resumeSummary?.expCount || 0} Experience sections • {resumeSummary?.skillCount || 0} Skills detected
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={removeResumeFile}
+                                    className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-lg text-xs font-bold transition-all"
+                                >
+                                    Remove Resume
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Interview Type Selector (Grid Design) */}
                 <div className='space-y-6'>
@@ -178,6 +361,7 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
                     <Button
                         variant="default"
                         size="lg"
+                        disabled={isExtracting}
                         className='w-full h-14 sm:h-16 text-base sm:text-lg bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black shadow-2xl shadow-indigo-500/20 border-t border-white/10 transition-all active:scale-[0.98] group/btn flex items-center justify-center gap-3'
                         onClick={handleGoToNext}
                     >
@@ -191,4 +375,4 @@ function FormContainer({ onHandleInputChange, GoToNext }) {
     )
 }
 
-export default FormContainer
+export default FormContainer

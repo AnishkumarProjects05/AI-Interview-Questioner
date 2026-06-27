@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
-import { QUESTION_PROMPT, DISCUSSION_PROMPT } from '@/services/Constant';
+import { QUESTION_PROMPT, DISCUSSION_PROMPT, RESUME_QUESTION_PROMPT, RESUME_DISCUSSION_PROMPT } from '@/services/Constant';
 import fs from 'fs';
 
 const logPath = 'e:/ai-interview/aimodel-error.log';
@@ -106,13 +106,22 @@ export async function POST(request) {
     );
   }
 
-  const { jobPosition, jobDescription, duration, type } = await request.json();
+  const { jobPosition, jobDescription, duration, type, interviewMode, resumeContent } = await request.json();
 
-  const FINAL_PROMPT = QUESTION_PROMPT
-    .replace('{{jobTitle}}', jobPosition ?? '')
-    .replace('{{jobDescription}}', jobDescription ?? '')
-    .replace('{{duration}}', duration ?? '')
-    .replace('{{type}}', Array.isArray(type) ? type.join(', ') : (type ?? ''));
+  const formattedType = Array.isArray(type) ? type.join(', ') : (type ?? '');
+  const isResumeMode = interviewMode === 'resume';
+
+  const FINAL_PROMPT = isResumeMode
+    ? RESUME_QUESTION_PROMPT
+        .replace('{{jobTitle}}', jobPosition ?? 'Software Professional')
+        .replace('{{resumeContent}}', resumeContent ?? jobDescription ?? '')
+        .replace('{{duration}}', duration ?? '')
+        .replace('{{type}}', formattedType)
+    : QUESTION_PROMPT
+        .replace('{{jobTitle}}', jobPosition ?? '')
+        .replace('{{jobDescription}}', jobDescription ?? '')
+        .replace('{{duration}}', duration ?? '')
+        .replace('{{type}}', formattedType);
 
   const encoder = new TextEncoder();
 
@@ -152,15 +161,25 @@ export async function POST(request) {
         sendUpdate({ status: 'synthesizing', message: 'Lead Interviewer is synthesising the best questions...' });
 
         // Step 2: Synthesis
-        const FINAL_DISCUSSION_PROMPT = DISCUSSION_PROMPT
-          .replace('{{jobTitle}}', jobPosition ?? '')
-          .replace('{{jobDescription}}', jobDescription ?? '')
-          .replace('{{duration}}', duration ?? '')
-          .replace('{{type}}', Array.isArray(type) ? type.join(', ') : (type ?? ''))
-          .replace('{{proposal1}}', prop1 || "No proposal available")
-          .replace('{{proposal2}}', prop2 || "No proposal available")
-          .replace('{{proposal3}}', prop3 || "No proposal available")
-          .replace('{{proposal4}}', prop4 || "No proposal available");
+        const FINAL_DISCUSSION_PROMPT = isResumeMode
+          ? RESUME_DISCUSSION_PROMPT
+              .replace('{{jobTitle}}', jobPosition ?? 'Software Professional')
+              .replace('{{resumeContent}}', resumeContent ?? jobDescription ?? '')
+              .replace('{{duration}}', duration ?? '')
+              .replace('{{type}}', formattedType)
+              .replace('{{proposal1}}', prop1 || "No proposal available")
+              .replace('{{proposal2}}', prop2 || "No proposal available")
+              .replace('{{proposal3}}', prop3 || "No proposal available")
+              .replace('{{proposal4}}', prop4 || "No proposal available")
+          : DISCUSSION_PROMPT
+              .replace('{{jobTitle}}', jobPosition ?? '')
+              .replace('{{jobDescription}}', jobDescription ?? '')
+              .replace('{{duration}}', duration ?? '')
+              .replace('{{type}}', formattedType)
+              .replace('{{proposal1}}', prop1 || "No proposal available")
+              .replace('{{proposal2}}', prop2 || "No proposal available")
+              .replace('{{proposal3}}', prop3 || "No proposal available")
+              .replace('{{proposal4}}', prop4 || "No proposal available");
 
         const synthesisModel = "google/gemini-2.5-flash";
         const finalAnswer = await getAICompletion(synthesisModel, FINAL_DISCUSSION_PROMPT, true, "Google Gemini 2.5 Flash", 60000);
@@ -179,6 +198,7 @@ export async function POST(request) {
       }
     }
   });
+
 
   return new Response(stream, {
     headers: { 'Content-Type': 'application/x-ndjson' },

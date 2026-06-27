@@ -58,7 +58,7 @@ function QuestionList({ formData, onCreateLink }) {
         if (
             formData &&
             formData.jobPosition?.trim() &&
-            formData.jobDescription?.trim() &&
+            (formData.jobDescription?.trim() || formData.resumeContent?.trim()) &&
             formData.duration &&
             Array.isArray(formData.type) && formData.type.length > 0
         ) {

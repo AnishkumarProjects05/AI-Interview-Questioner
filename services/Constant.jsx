@@ -156,3 +156,96 @@ Example format:
 }
 
 🎯 Deliver an interview script that will accurately identify top-tier talent.`
+
+export const RESUME_QUESTION_PROMPT = `You are an expert technical interviewer conducting a personalized candidate resume interview.
+Based on the following inputs and the candidate's extracted resume details, generate a well-structured list of high-quality interview questions tailored directly to their background:
+
+Target Position: {{jobTitle}}
+
+Candidate Resume Content:
+{{resumeContent}}
+
+Interview Duration: {{duration}}
+
+Interview Type: {{type}}
+
+📝 Your task:
+Analyze the candidate's resume to identify their specific projects, work experiences, technical skills, tools, and achievements.
+Generate a list of interview questions that thoroughly evaluate their real-world experience, challenge their technical implementation details mentioned in the resume, and assess their capability for the {{jobTitle}} role.
+
+Follow these constraints for the number of questions:
+- If Duration is 5 Minutes: Generate exactly 5 questions.
+- If Duration is 15 Minutes: Generate exactly 10 questions.
+- If Duration is 30 Minutes: Generate exactly 20 questions.
+- If Duration is 60 Minutes: Generate exactly 30 questions.
+
+IMPORTANT: You must generate ONLY {{type}} questions. Every single question in your response MUST have the type "{{type}}".
+
+🧩 Format your response PRECISELY in JSON format.
+Your entire response must be a single JSON object with a key "interviewQuestions" containing the array of questions.
+
+Example format:
+{
+  "interviewQuestions": [
+    {
+      "question": "In your resume, you mentioned building...",
+      "type": "Technical"
+    }
+  ]
+}
+
+🎯 The goal is to conduct a deeply personalized interview probing the candidate's actual resume experience for a {{jobTitle}} role.`
+
+export const RESUME_DISCUSSION_PROMPT = `You are the Lead Interviewer and Quality Assurance Specialist. You have received four sets of proposed resume-based interview questions from different high-performance AI models for the candidate applying for {{jobTitle}}.
+
+Target Position: {{jobTitle}}
+Candidate Resume Content:
+{{resumeContent}}
+Interview Duration: {{duration}}
+Interview Type: {{type}}
+
+Below are the proposals from the models:
+
+---
+PROPOSAL 1:
+{{proposal1}}
+
+---
+PROPOSAL 2:
+{{proposal2}}
+
+---
+PROPOSAL 3:
+{{proposal3}}
+
+---
+PROPOSAL 4:
+{{proposal4}}
+---
+
+📝 Your Task:
+You are the final gatekeeper. Synthesize the absolute best set of resume-based interview questions. Ensure questions explicitly probe into the projects, accomplishments, and tech stack listed in the candidate's resume.
+
+DURATION CONSTRAINTS:
+- 5 Minutes: exactly 5 questions
+- 15 Minutes: exactly 10 questions
+- 30 Minutes: exactly 20 questions
+- 60 Minutes: exactly 30 questions
+
+IMPORTANT: Your final list MUST contain ONLY {{type}} questions. Every single question in your final JSON MUST have the key "type" set to "{{type}}".
+
+🧩 Format your response PRECISELY in JSON format.
+Your entire response must be a single JSON object with a key "interviewQuestions" containing the array of questions.
+
+Example format:
+{
+  "interviewQuestions": [
+    {
+      "question": "Can you explain how you optimized...",
+      "type": "{{type}}"
+    }
+  ]
+}
+
+🎯 Deliver an interview script that effectively validates the candidate's resume achievements.`
+
