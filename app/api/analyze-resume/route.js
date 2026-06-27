@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
 
 // Mock DOMMatrix on the server to prevent pdfjs-dist/pdf-parse loading errors in Node
 if (typeof global.DOMMatrix === 'undefined') {
@@ -45,35 +44,13 @@ export async function POST(request) {
       );
     }
 
-    // 2. Configure OpenAI client (fallback from OpenRouter to Google Gemini API compatibility)
-    let openai;
-    let modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-
-    const openRouterApiKey = process.env.OPEN_ROUTER_API_KEY || process.env.OPENROUTER_API_KEY;
+    // 2. Configure model and keys (EXACTLY mirroring training.py)
+    const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
     const googleApiKey = process.env.GOOGLE_API_KEY;
 
-    if (openRouterApiKey) {
-      openai = new OpenAI({
-        baseURL: "https://openrouter.ai/api/v1",
-        apiKey: openRouterApiKey.trim().replace(/^['"]|['"]$/g, ''),
-        defaultHeaders: {
-          "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-          "X-Title": "CareerConnect AI",
-        },
-      });
-      // Prepend google/ for OpenRouter if not already present
-      if (!modelName.includes("/")) {
-        modelName = "google/" + modelName;
-      }
-    } else if (googleApiKey) {
-      // Use direct Gemini API (OpenAI compatibility layer)
-      openai = new OpenAI({
-        baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
-        apiKey: googleApiKey.trim().replace(/^['"]|['"]$/g, ''),
-      });
-    } else {
+    if (!googleApiKey) {
       return NextResponse.json(
-        { error: 'AI provider API key missing. Please configure OPEN_ROUTER_API_KEY or GOOGLE_API_KEY in your environment.' },
+        { error: 'Google API key missing. Please configure GOOGLE_API_KEY in your environment.' },
         { status: 500 }
       );
     }
@@ -101,15 +78,44 @@ export async function POST(request) {
     }
     `;
 
-    // 4. Request completion with temperature 0.0 and JSON response format (EXACTLY mirroring training.py)
-    const completion = await openai.chat.completions.create({
-      model: modelName,
-      messages: [{ role: "user", content: promptTemplate }],
-      temperature: 0.0,
-      response_format: { type: "json_object" }
+    // 4. Request completion directly from Google Gemini API via native REST fetch (no OpenAI SDK wrapper)
+    const apiKeyCleaned = googleApiKey.trim().replace(/^['"]|['"]$/g, '');
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKeyCleaned}`;
+    
+    const response = await fetch(geminiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: promptTemplate
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.0,
+          responseMimeType: "application/json"
+        }
+      })
     });
 
-    let rawContent = completion.choices[0].message.content.trim();
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Gemini API error: ${response.statusText} (${response.status}) - ${errText}`);
+    }
+
+    const responseData = await response.json();
+    
+    if (!responseData.candidates || responseData.candidates.length === 0 || !responseData.candidates[0].content || !responseData.candidates[0].content.parts || responseData.candidates[0].content.parts.length === 0) {
+      throw new Error("No response received from the Gemini model.");
+    }
+
+    let rawContent = responseData.candidates[0].content.parts[0].text.trim();
     
     // CLEANUP: Strip out markdown formatting if the model accidentally includes it (EXACTLY mirroring training.py)
     if (rawContent.startsWith("```json")) {
