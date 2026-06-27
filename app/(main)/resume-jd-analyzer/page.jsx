@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  FileText, 
-  UploadCloud, 
-  Trash2, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Sparkles, 
-  FileSearch2, 
+import {
+  FileText,
+  UploadCloud,
+  Trash2,
+  CheckCircle2,
+  AlertTriangle,
+  Sparkles,
+  FileSearch2,
   RefreshCw,
   Award,
   BookOpen
@@ -147,7 +147,7 @@ export default function ResumeJdAnalyzerPage() {
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50 p-6 md:p-8 font-poppins">
       <div className="max-w-6xl mx-auto space-y-8">
-        
+
         {/* HEADER SECTION */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm">
           <div className="space-y-1">
@@ -160,13 +160,13 @@ export default function ResumeJdAnalyzerPage() {
             </p>
           </div>
           {results && (
-            <Button 
+            <Button
               onClick={() => {
                 setResults(null);
                 setFile(null);
                 setJobDescription("");
               }}
-              variant="outline" 
+              variant="outline"
               className="border-indigo-100 hover:bg-indigo-50 dark:border-white/10 dark:hover:bg-slate-800 text-indigo-600 dark:text-indigo-400 font-bold transition-all flex items-center gap-2"
             >
               <RefreshCw className="w-4 h-4" />
@@ -178,7 +178,7 @@ export default function ResumeJdAnalyzerPage() {
         {/* INPUT FORM (ONLY SHOWN IF NO RESULTS YET) */}
         {!results && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
+
             {/* LEFT COLUMN: JOB DESCRIPTION */}
             <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm flex flex-col space-y-4">
               <div className="flex items-center gap-2">
@@ -217,11 +217,10 @@ export default function ResumeJdAnalyzerPage() {
                   onDragOver={handleDrag}
                   onDragLeave={handleDrag}
                   onDrop={handleDrop}
-                  className={`flex-1 min-h-[220px] flex flex-col items-center justify-center border-2 border-dashed rounded-xl transition-all cursor-pointer p-6 text-center ${
-                    dragActive 
-                      ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20" 
+                  className={`flex-1 min-h-[220px] flex flex-col items-center justify-center border-2 border-dashed rounded-xl transition-all cursor-pointer p-6 text-center ${dragActive
+                      ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20"
                       : "border-slate-200 hover:border-indigo-400 dark:border-white/10 hover:bg-slate-50/50 dark:hover:bg-slate-950/50"
-                  }`}
+                    }`}
                   onClick={() => document.getElementById("file-upload").click()}
                 >
                   <input
@@ -298,16 +297,16 @@ export default function ResumeJdAnalyzerPage() {
         {/* RESULTS RENDERING */}
         {results && (
           <div className="space-y-8 animate-fadeIn">
-            
+
             {/* OVERALL STATISTICS ROW */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              
+
               {/* CARD 1: SCORE DIAL */}
               <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm flex flex-col items-center justify-center text-center space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   Match Score
                 </h3>
-                
+
                 {/* SVG Circular Chart */}
                 <div className="relative w-36 h-36 flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90">
@@ -348,15 +347,15 @@ export default function ResumeJdAnalyzerPage() {
                 <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-white/5">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                   <h3 className="text-sm font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                    Matched Skills ({results.matched_skills?.length || 0})
+                    Matched Requirements ({results.matched_skills?.length || 0})
                   </h3>
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2 overflow-y-auto max-h-[180px] pr-2 scrollbar-thin scrollbar-thumb-slate-200">
                   {results.matched_skills && results.matched_skills.length > 0 ? (
                     results.matched_skills.map((skill, i) => (
-                      <span 
-                        key={i} 
+                      <span
+                        key={i}
                         className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-lg text-xs font-bold border border-emerald-100 dark:border-emerald-950/50 flex items-center gap-1.5"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -374,15 +373,15 @@ export default function ResumeJdAnalyzerPage() {
                 <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-white/5">
                   <AlertTriangle className="w-5 h-5 text-rose-500" />
                   <h3 className="text-sm font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                    Missing Keywords ({results.missing_skills?.length || 0})
+                    Missing Requirements ({results.missing_skills?.length || 0})
                   </h3>
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2 overflow-y-auto max-h-[180px] pr-2 scrollbar-thin scrollbar-thumb-slate-200">
                   {results.missing_skills && results.missing_skills.length > 0 ? (
                     results.missing_skills.map((skill, i) => (
-                      <span 
-                        key={i} 
+                      <span
+                        key={i}
                         className="px-3 py-1.5 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-lg text-xs font-bold border border-rose-100 dark:border-rose-950/50 flex items-center gap-1.5"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
