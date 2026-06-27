@@ -87,7 +87,8 @@ const styles = StyleSheet.create({
   feedbackHeader: {
     fontSize: 10,
     fontFamily: 'Helvetica-Bold',
-    marginBottom: 8,
+    marginBottom: 10,
+    marginTop: 10,
     textTransform: 'uppercase',
   },
   feedbackBox: {
@@ -95,8 +96,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderStyle: 'solid',
     padding: 12,
-    minHeight: 160,
-    flexGrow: 1,
+    width: '100%',
   },
   feedbackText: {
     fontSize: 9,
@@ -171,7 +171,7 @@ export const ResumeReportPDF = ({ results, logoUrl }) => {
             </View>
 
             {/* OVERALL FEEDBACK SECTION */}
-            <View style={{ marginBottom: 5 }}>
+            <View>
               <Text style={styles.feedbackHeader}>
                 OVERALL FEEDBACK FROM CareerConnectAI:
               </Text>
