@@ -50,16 +50,13 @@ function Options() {
         </div>
       </div>
 
-      <div
-        onClick={() => toast('Resume Analyzer feature is coming soon!')}
-        className={`${cardBase} h-[200px] justify-center items-center opacity-70 grayscale hover:grayscale-0 cursor-pointer transition-all bg-slate-50/50 dark:bg-slate-900/50 border-dashed group/resume`}
-      >
+      <Link href="/resume-jd-analyzer" className={`${cardBase} h-[200px] justify-center items-center cursor-pointer group/resume`}>
         <div className="text-center space-y-2">
-          <FileText className="w-6 h-6 text-slate-400 mx-auto group-hover/resume:text-indigo-500 transition-colors" />
+          <FileText className="w-6 h-6 text-slate-400 group-hover/resume:text-indigo-500 transition-colors mx-auto" />
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resume Analyzer</p>
-          <p className="text-[10px] text-slate-500 font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full w-fit mx-auto">Coming Soon</p>
+          <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 px-2.5 py-1 rounded-full w-fit mx-auto transition-colors">Currently Available</p>
         </div>
-      </div>
+      </Link>
 
       <Link href="/resume-builder" className={`${cardBase} h-[200px] justify-center items-center cursor-pointer group/builder`}>
         <div className="text-center space-y-2">
