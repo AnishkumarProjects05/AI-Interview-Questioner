@@ -87,21 +87,15 @@ const styles = StyleSheet.create({
   feedbackHeader: {
     fontSize: 10,
     fontFamily: 'Helvetica-Bold',
-    marginBottom: 10,
+    marginBottom: 8,
     marginTop: 10,
     textTransform: 'uppercase',
-  },
-  feedbackBox: {
-    borderWidth: 1,
-    borderColor: '#000000',
-    borderStyle: 'solid',
-    padding: 12,
-    width: '100%',
   },
   feedbackText: {
     fontSize: 9,
     fontFamily: 'Helvetica',
     lineHeight: 1.5,
+    marginTop: 4,
   },
 });
 
@@ -175,11 +169,9 @@ export const ResumeReportPDF = ({ results, logoUrl }) => {
               <Text style={styles.feedbackHeader}>
                 OVERALL FEEDBACK FROM CareerConnectAI:
               </Text>
-              <View style={styles.feedbackBox}>
-                <Text style={styles.feedbackText}>
-                  {results?.justification || 'No detailed evaluation justification provided.'}
-                </Text>
-              </View>
+              <Text style={styles.feedbackText}>
+                {results?.justification || 'No detailed evaluation justification provided.'}
+              </Text>
             </View>
           </View>
         </View>
