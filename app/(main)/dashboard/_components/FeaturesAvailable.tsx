@@ -43,7 +43,7 @@ function FeaturesAvailable() {
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
                     <div className="h-8 w-1.5 bg-indigo-600 rounded-full"></div>
-                    Platform Features
+                    Features
                 </h2>
                 <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full">
                     <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
