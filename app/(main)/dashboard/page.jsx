@@ -8,7 +8,7 @@ import InterviewHistory from '../_components/InterviewHistory'
 function Dashboard() {
   return (
     <div className='space-y-12 font-inter'>
-      
+
       {/* Hero / Welcome Section */}
       <section className='animate-in fade-in slide-in-from-top-4 duration-1000'>
         <WelcomeContainer />
@@ -16,7 +16,7 @@ function Dashboard() {
 
       {/* Bento Grid Content */}
       <div className='grid grid-cols-1 lg:grid-cols-12 gap-8'>
-        
+
         {/* Main Action Area (Bento Left) */}
         <section className='lg:col-span-8 animate-in fade-in slide-in-from-left-4 duration-1000 delay-200'>
           <div className='flex items-center justify-between mb-8'>
@@ -26,16 +26,17 @@ function Dashboard() {
             </h2>
           </div>
           <Options />
-          <FeaturesAvailable />
+
         </section>
 
         {/* Side Info / Stats (Bento Right) - Interview History */}
         <section className='lg:col-span-4 animate-in fade-in slide-in-from-right-4 duration-1000 delay-300'>
           <div className='h-full flex flex-col gap-8'>
-             <InterviewHistory />
+            <InterviewHistory />
           </div>
         </section>
       </div>
+      <FeaturesAvailable />
 
     </div>
   )
