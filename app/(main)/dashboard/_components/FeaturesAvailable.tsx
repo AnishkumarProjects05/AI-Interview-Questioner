@@ -51,7 +51,7 @@ function FeaturesAvailable() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-4 w-full">
+            <div className="grid grid-cols-4 md:grid-cols-2 gap-4 w-full">
                 {features.map((feature, index) => {
                     const Icon = feature.icon
                     return (
