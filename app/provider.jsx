@@ -120,6 +120,30 @@ function Provider({ children }) {
 
             console.log("New user created and set:", data);
             setUser(data);
+
+            // Trigger welcome greeting email via Mailgun asynchronously (non-blocking)
+            fetch('/api/send-greeting-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: data.email,
+                    name: data.name,
+                }),
+            })
+            .then(async (res) => {
+                if (!res.ok) {
+                    const errDetail = await res.json();
+                    console.error("Failed to send welcome email:", errDetail);
+                } else {
+                    console.log("Welcome email sent successfully.");
+                }
+            })
+            .catch((err) => {
+                console.error("Error triggering welcome email API:", err);
+            });
+
             return;
         }
 
