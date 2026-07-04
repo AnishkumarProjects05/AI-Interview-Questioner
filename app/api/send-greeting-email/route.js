@@ -157,7 +157,7 @@ export async function POST(request) {
           </div>
           
           <div class="btn-container">
-            <a href="https://career-connect-ai.vercel.app/dashboard" class="btn">Launch Your Dashboard</a>
+            <a href="https://ai-interview-questioner.vercel.app/dashboard" class="btn">Launch Your Dashboard</a>
           </div>
           
           <p style="font-size: 13px; text-align: center; color: #64748b; margin-top: 24px;">
