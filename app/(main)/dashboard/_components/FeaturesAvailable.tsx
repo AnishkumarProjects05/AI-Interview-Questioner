@@ -51,13 +51,13 @@ function FeaturesAvailable() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-4 md:grid-cols-2 gap-4 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
                 {features.map((feature, index) => {
                     const Icon = feature.icon
                     return (
                         <div
                             key={index}
-                            className="group relative flex flex-col p-6 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/30 dark:hover:border-indigo-500/50 transition-all duration-500 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 dark:shadow-black/20"
+                            className="group relative flex flex-col p-5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/30 dark:hover:border-indigo-500/50 transition-all duration-500 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 dark:shadow-black/20"
                         >
                             {/* Light glow on hover */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 dark:bg-indigo-600/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 dark:group-hover:bg-indigo-600/10 transition-all duration-500"></div>
@@ -65,7 +65,7 @@ function FeaturesAvailable() {
                             <div className="relative z-10 space-y-4">
                                 <div className="flex items-center justify-between">
                                     <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl w-fit group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 border border-indigo-100 dark:border-transparent">
-                                        <Icon className="w-6 h-6" />
+                                        <Icon className="w-5 h-5" />
                                     </div>
                                     {feature.badge && (
                                         <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
@@ -75,10 +75,10 @@ function FeaturesAvailable() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="text-lg font-black text-[#0f172a] dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                    <h4 className="text-sm font-black text-[#0f172a] dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug">
                                         {feature.title}
                                     </h4>
-                                    <p className="text-slate-500 dark:text-slate-400 text-xs font-medium leading-relaxed">
+                                    <p className="text-slate-500 dark:text-slate-400 text-[11px] font-medium leading-relaxed">
                                         {feature.description}
                                     </p>
                                 </div>
