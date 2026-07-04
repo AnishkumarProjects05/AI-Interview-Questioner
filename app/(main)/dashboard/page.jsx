@@ -2,6 +2,7 @@
 import React from 'react'
 import WelcomeContainer from './_components/WelcomeContainer'
 import Options from './_components/Options'
+import FeaturesAvailable from './_components/FeaturesAvailable'
 import InterviewHistory from '../_components/InterviewHistory'
 
 function Dashboard() {
@@ -25,6 +26,7 @@ function Dashboard() {
             </h2>
           </div>
           <Options />
+          <FeaturesAvailable />
         </section>
 
         {/* Side Info / Stats (Bento Right) - Interview History */}
