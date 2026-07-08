@@ -71,7 +71,7 @@ function Login() {
             onClick={signInGoogle}
           >
             <LogIn className="w-5 h-5" />
-            Get Started
+            Permission with Google
           </Button>
 
           <div className="flex items-center justify-center gap-2 pt-2">
