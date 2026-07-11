@@ -1,10 +1,5 @@
 // pdfjs-dist v5+: set workerSrc via URL instead of importing the worker entry
 // https://github.com/mozilla/pdf.js/wiki/Setup-pdf.js-in-a-website#with-a-bundler
-import * as pdfjs from "pdfjs-dist";
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.mjs",
-  import.meta.url
-).toString();
 
 import type { TextItem as PdfjsTextItem } from "pdfjs-dist/types/src/display/api";
 import type { TextItem, TextItems } from "@/lib/resume/parse-resume-from-pdf/types";
@@ -23,6 +18,15 @@ import type { TextItem, TextItems } from "@/lib/resume/parse-resume-from-pdf/typ
  * }
  */
 export const readPdf = async (fileUrl: string): Promise<TextItems> => {
+  if (typeof global !== 'undefined' && typeof (global as any).DOMMatrix === 'undefined') {
+    (global as any).DOMMatrix = class DOMMatrix {};
+  }
+  const pdfjs = await import("pdfjs-dist");
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.mjs",
+    import.meta.url
+  ).toString();
+
   const pdfFile = await pdfjs.getDocument(fileUrl).promise;
   let textItems: TextItems = [];
 

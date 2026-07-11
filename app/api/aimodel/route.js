@@ -29,7 +29,7 @@ if (process.env.NODE_ENV === 'development') {
 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
-  apiKey: openRouterApiKey,
+  apiKey: openRouterApiKey || "dummy-key-for-build",
   defaultHeaders: {
     "HTTP-Referer": cleanEnvVar(process.env.NEXT_PUBLIC_APP_URL) || "http://localhost:3000",
     "X-Title": "CareerConnect AI",
