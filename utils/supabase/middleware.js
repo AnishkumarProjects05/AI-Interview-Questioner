@@ -35,6 +35,35 @@ export async function updateSession(request) {
     }
   )
 
+  // Handle PKCE code exchange in the middleware
+  const code = request.nextUrl.searchParams.get('code')
+  if (code) {
+    try {
+      await supabase.auth.exchangeCodeForSession(code)
+      
+      const url = request.nextUrl.clone()
+      url.searchParams.delete('code')
+      url.searchParams.delete('next')
+      
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        if (url.pathname === '/' || url.pathname === '/auth') {
+          url.pathname = '/dashboard'
+        }
+      } else {
+        url.pathname = '/auth'
+      }
+      return NextResponse.redirect(url)
+    } catch (err) {
+      console.error('Error exchanging code for session in middleware:', err)
+      const url = request.nextUrl.clone()
+      url.pathname = '/auth'
+      url.searchParams.delete('code')
+      url.searchParams.delete('next')
+      return NextResponse.redirect(url)
+    }
+  }
+
   // Get user session to refresh tokens automatically
   const {
     data: { user },
