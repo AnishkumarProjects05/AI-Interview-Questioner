@@ -89,7 +89,7 @@ function InterviewHistory() {
                                     <Clock className='w-4 h-4 text-slate-400 dark:text-slate-500 flex-shrink-0' />
                                 </div>
                                 <div className='flex items-center justify-between mt-1'>
-                                    <div className='flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider'>
+                                    <div className='flex items-cente98r gap-2 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider'>
                                         <Calendar className='w-3 h-3' />
                                         {formatDate(interview.Created_at || interview.createdAt)}
                                     </div>

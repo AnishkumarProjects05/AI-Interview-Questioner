@@ -35,16 +35,25 @@ export async function updateSession(request) {
     }
   )
 
+  // Helper to redirect and copy cookies from supabaseResponse
+  const redirectResponse = (url) => {
+    const response = NextResponse.redirect(url)
+    supabaseResponse.cookies.getAll().forEach(({ name, value, options }) => {
+      response.cookies.set(name, value, options)
+    })
+    return response
+  }
+
   // Handle PKCE code exchange in the middleware
   const code = request.nextUrl.searchParams.get('code')
   if (code) {
     try {
       await supabase.auth.exchangeCodeForSession(code)
-      
+
       const url = request.nextUrl.clone()
       url.searchParams.delete('code')
       url.searchParams.delete('next')
-      
+
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         if (url.pathname === '/' || url.pathname === '/auth') {
@@ -53,14 +62,14 @@ export async function updateSession(request) {
       } else {
         url.pathname = '/auth'
       }
-      return NextResponse.redirect(url)
+      return redirectResponse(url)
     } catch (err) {
       console.error('Error exchanging code for session in middleware:', err)
       const url = request.nextUrl.clone()
       url.pathname = '/auth'
       url.searchParams.delete('code')
       url.searchParams.delete('next')
-      return NextResponse.redirect(url)
+      return redirectResponse(url)
     }
   }
 
@@ -75,7 +84,7 @@ export async function updateSession(request) {
     if (pathname === '/auth' || pathname === '/') {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
-      return NextResponse.redirect(url)
+      return redirectResponse(url)
     }
   } else {
     // If not authenticated, redirect to /auth (excluding api, static assets, etc.)
@@ -86,7 +95,7 @@ export async function updateSession(request) {
     ) {
       const url = request.nextUrl.clone()
       url.pathname = '/auth'
-      return NextResponse.redirect(url)
+      return redirectResponse(url)
     }
   }
 
