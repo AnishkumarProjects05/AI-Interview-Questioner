@@ -134,6 +134,7 @@ export function ResumeParserComponent() {
           onClick={() => setActiveTab("pdf")}
           className={`px-5 py-2.5 rounded-full text-xs font-black tracking-wider uppercase transition-all duration-300 flex items-center gap-2 ${
             activeTab === "pdf"
+
               ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
               : "text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
           }`}

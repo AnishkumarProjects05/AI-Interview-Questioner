@@ -170,6 +170,8 @@ Interview Duration: {{duration}}
 Interview Type: {{type}}
 
 📝 Your task:
+Greet the Candidate by the Name present in their Resume instead of their Email Name,
+
 Analyze the candidate's resume to identify their specific projects, work experiences, technical skills, tools, and achievements.
 Generate a list of interview questions that thoroughly evaluate their real-world experience, challenge their technical implementation details mentioned in the resume, and assess their capability for the {{jobTitle}} role.
 
