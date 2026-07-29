@@ -24,7 +24,7 @@ function WelcomeContainer() {
 
             <div className='space-y-3'>
               <h1 className='text-4xl md:text-5xl font-black text-[#0f172a] dark:text-white tracking-tight leading-[1.1]'>
-                Master Your Next <br />
+                Easily Passed  <br />
                 <span className='text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400'>Technical Interview</span>
               </h1>
               <p className='text-slate-500 dark:text-slate-400 text-lg font-medium max-w-xl leading-relaxed'>
