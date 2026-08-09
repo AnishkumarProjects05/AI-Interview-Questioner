@@ -46,6 +46,7 @@ export function ResumeImportComponent() {
                   heading="You have data saved in browser from prior session"
                   buttonText="Continue where I left off"
                 />
+                
                 <OrDivider />
               </>
             )}

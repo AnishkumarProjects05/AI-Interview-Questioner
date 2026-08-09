@@ -27,6 +27,11 @@ export const SideBarOptions = [
     name: "Resume Parser",
     icon: DockIcon,
     path: "/resume-parser"
+  },
+  {
+    name : "Interview Experience",
+    icon: Calendar,
+    path : "/interview-experience"
   }
 ]
 
