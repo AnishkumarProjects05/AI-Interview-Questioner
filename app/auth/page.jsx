@@ -5,22 +5,22 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/services/supabaseClient'
 import { LogIn } from 'lucide-react'
 
-function Login() {
-  const signInGoogle = async () => {
-    const redirectToUrl = typeof window !== 'undefined' ? window.location.origin : undefined;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: redirectToUrl,
-        queryParams: {
-          prompt: 'select_account',
+  function Login() {
+    const signInGoogle = async () => {
+      const redirectToUrl = typeof window !== 'undefined' ? window.location.origin : undefined;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectToUrl,
+          queryParams: {
+            prompt: 'select_account',
+          },
         },
-      },
-    })
-    if (error) {
-      console.log('Error: ', error.message)
+      })
+      if (error) {
+        console.log('Error: ', error.message)
+      }
     }
-  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#020617] flex items-center justify-center p-6 relative overflow-hidden font-inter selection:bg-indigo-500/30">

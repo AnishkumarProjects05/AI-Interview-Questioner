@@ -35,6 +35,12 @@ function FeaturesAvailable() {
             title: "Intelligence History & Metrics",
             description: "Save and index every single mock interview question and performance record securely with persistent storage .",
             badge: "Secure"
+        },
+        {
+            icon: Sparkles,
+            title: "Interview Experience",
+            description: "Get Some Interview Experiences from our community and learn from them.",
+            badge: "Experiences"
         }
     ]
 

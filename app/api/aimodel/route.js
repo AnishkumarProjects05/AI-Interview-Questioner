@@ -2,7 +2,11 @@ import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 import { QUESTION_PROMPT, DISCUSSION_PROMPT, RESUME_QUESTION_PROMPT, RESUME_DISCUSSION_PROMPT } from '@/services/Constant';
 import fs from 'fs';
-
+import DEBATE_ONE from 'process.env.DEBATE_ONE';
+import DEBATE_TWO from 'process.env.DEBATE_TWO';
+import DEBATE_THREE from 'process.env.DEBATE_THREE';
+import DEBATE_FOUR from 'process.env.DEBATE_FOUR';
+import LEAD_DEBATE from 'process.env.LEAD_DEBATE';
 const logPath = 'e:/ai-interview/aimodel-error.log';
 
 const cleanEnvVar = (val) => {
@@ -135,10 +139,10 @@ export async function POST(request) {
         sendUpdate({ status: 'thinking', message: 'AI Panel is starting to think...' });
 
         const models = [
-          { id: "meta-llama/llama-3.2-3b-instruct:free", name: "LLaMA 3.2 (Free)" },
-          { id: "google/gemini-2.5-flash", name: "Google Gemini 2.5 Flash" },
-          { id: "deepseek/deepseek-chat", name: "DeepSeek Chat" },
-          { id: "qwen/qwen-2.5-72b-instruct", name: "Qwen 2.5 72B Instruct" }
+          { id: DEBATE_ONE, name: "Debate Model 1" },
+          { id: DEBATE_TWO, name: "Debate Model 2" },
+          { id: DEBATE_THREE, name: "Debate Model 3" },
+          { id: DEBATE_FOUR, name: "Debate Model 4" }
         ];
 
         // Step 1: Parallel Generation  
@@ -181,8 +185,8 @@ export async function POST(request) {
               .replace('{{proposal3}}', prop3 || "No proposal available")
               .replace('{{proposal4}}', prop4 || "No proposal available");
 
-        const synthesisModel = "google/gemini-2.5-flash";
-        const finalAnswer = await getAICompletion(synthesisModel, FINAL_DISCUSSION_PROMPT, true, "Google Gemini 2.5 Flash", 60000);
+        const synthesisModel = LEAD_DEBATE;
+        const finalAnswer = await getAICompletion(synthesisModel, FINAL_DISCUSSION_PROMPT, true, "Lead Debate Model", 60000);
 
         if (!finalAnswer) {
           sendUpdate({ status: 'fallback', message: 'Using best individual proposal as synthesis timed out.' });
