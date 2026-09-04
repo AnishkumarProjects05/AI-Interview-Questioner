@@ -65,6 +65,13 @@ function Options() {
           <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 px-2.5 py-1 rounded-full w-fit mx-auto transition-colors">Currently Available</p>
         </div>
       </Link>
+      <Link href="/interview-experience" className={`${cardBase} h-[200px] justify-center items-center cursor-pointer group/resume`}>
+        <div className="text-center space-y-2">
+          <FileText className="w-6 h-6 text-slate-400 group-hover/resume:text-indigo-500 transition-colors mx-auto" />
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Interview Experience</p>
+          <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 px-2.5 py-1 rounded-full w-fit mx-auto transition-colors">Currently Available</p>
+        </div>
+      </Link>
 
     </div>
   )
