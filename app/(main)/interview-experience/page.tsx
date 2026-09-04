@@ -947,13 +947,19 @@ export default function InterviewExperiencePage() {
                   <h2 className="text-2xl font-black text-slate-900 dark:text-white">
                     {selectedExperience.role_title}
                   </h2>
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
                     <span className="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-md">
                       {selectedExperience.verdict}
                     </span>
                     <span className="px-2.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-md">
                       Difficulty: {selectedExperience.overall_difficulty}
                     </span>
+                    {selectedExperience.created_at && (
+                      <span className="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 font-semibold">
+                        <Clock className="w-3 h-3" />
+                        Posted on {formatPostDate(selectedExperience.created_at)}
+                      </span>
+                    )}
                   </div>
                 </div>
 
