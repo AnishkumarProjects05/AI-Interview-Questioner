@@ -412,6 +412,7 @@ export default function InterviewExperiencePage() {
 
           <Button
             onClick={() => setIsShareModalOpen(true)}
+            variant="default"
             size="lg"
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-6 py-6 rounded-2xl shadow-xl shadow-indigo-500/25 transition-all flex items-center gap-2.5 active:scale-95"
           >
@@ -496,6 +497,8 @@ export default function InterviewExperiencePage() {
             </div>
             <Button
               onClick={() => setIsShareModalOpen(true)}
+              variant="default"
+              size="default"
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs"
             >
               <Plus className="w-4 h-4 mr-1.5" /> Share First Experience
@@ -895,6 +898,7 @@ export default function InterviewExperiencePage() {
                   <Button
                     type="button"
                     variant="outline"
+                    size="default"
                     onClick={() => setIsShareModalOpen(false)}
                     className="rounded-xl"
                   >
@@ -904,6 +908,8 @@ export default function InterviewExperiencePage() {
                   <Button
                     type="submit"
                     disabled={isVerifyingAndSubmitting}
+                    variant="default"
+                    size="default"
                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 rounded-xl shadow-lg shadow-indigo-500/20 flex items-center gap-2"
                   >
                     {isVerifyingAndSubmitting ? (
@@ -1061,6 +1067,7 @@ export default function InterviewExperiencePage() {
                 <Button
                   onClick={() => setSelectedExperience(null)}
                   variant="outline"
+                  size="default"
                   className="rounded-xl text-xs"
                 >
                   Close
@@ -1071,6 +1078,8 @@ export default function InterviewExperiencePage() {
                     setSelectedExperience(null);
                     router.push(`/dashboard/CreateButton`);
                   }}
+                  variant="default"
+                  size="default"
                   className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow-lg shadow-indigo-500/20 flex items-center gap-2"
                 >
                   <Sparkles className="w-4 h-4" /> Practice Questions with AI
