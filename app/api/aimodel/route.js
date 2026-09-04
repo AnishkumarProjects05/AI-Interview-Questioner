@@ -2,11 +2,7 @@ import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 import { QUESTION_PROMPT, DISCUSSION_PROMPT, RESUME_QUESTION_PROMPT, RESUME_DISCUSSION_PROMPT } from '@/services/Constant';
 import fs from 'fs';
-// import DEBATE_ONE from 'process.env.DEBATE_ONE';
-// import DEBATE_TWO from 'process.env.DEBATE_TWO';
-// import DEBATE_THREE from 'process.env.DEBATE_THREE';
-// import DEBATE_FOUR from 'process.env.DEBATE_FOUR';
-// import LEAD_DEBATE from 'process.env.LEAD_DEBATE';
+
 const logPath = 'e:/ai-interview/aimodel-error.log';
 const DEBATE_ONE = process.env.DEBATE_ONE;
 const DEBATE_TWO = process.env.DEBATE_TWO;
