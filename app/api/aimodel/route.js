@@ -90,7 +90,7 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
 
       const statusMatch = error.message.match(/\b\d{3}\b/);
       const status = statusMatch ? statusMatch[0] : null;
-
+ 
       if (retries === 0 || status === '404' || status === '401') {
         console.error(`Final failure for ${modelName}: [${status || 'Error'}] ${error.message}`);
         return null;
