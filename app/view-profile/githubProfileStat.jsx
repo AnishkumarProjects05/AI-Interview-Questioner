@@ -23,7 +23,7 @@ export default function GithubProfileStat({ username }) {
 
       try {
         setLoading(true);
-        console.log(`📡 Fetching clean GitHub handle metrics: "${cleanUsername}"`);
+       
 
         // Perform Parallel HTTP Fetches to bypass single-endpoint bottlenecks
         const profilePromise = fetch(`https://api.github.com/users/${cleanUsername}`)

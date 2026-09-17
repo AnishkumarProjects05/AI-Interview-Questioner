@@ -29,9 +29,7 @@ export default function LeetCodeStats({ username }) {
           .pop()
           .replace(/\s+/g, "_");
 
-        console.log(
-          `📡 Fetching clean handle metrics: "${formattedUsername}"`
-        );
+        
 
         const response = await fetch(
           `https://leetcode-api-faisalshohag.vercel.app/${formattedUsername}`
@@ -43,7 +41,7 @@ export default function LeetCodeStats({ username }) {
 
         const data = await response.json();
 
-        console.log("LeetCode API Response:", data);
+        
 
         if (data.errors || data.totalSolved === undefined) {
           throw new Error("User does not exist on LeetCode");
