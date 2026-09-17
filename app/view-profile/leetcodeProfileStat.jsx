@@ -75,9 +75,9 @@ export default function LeetCodeStats({ username }) {
   }
 
   // Constants for standard total question distribution pools
-  const totalEasyPool = 946;
-  const totalMediumPool = 2061;
-  const totalHardPool = 937;
+  const totalEasyPool = stats.totalEasy;
+  const totalMediumPool = stats.totalMedium;
+  const totalHardPool = stats.totalHard;
   const totalPlatformPool = totalEasyPool + totalMediumPool + totalHardPool;
 
   return (

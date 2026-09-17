@@ -63,7 +63,7 @@ export async function POST(request) {
 You are the Official Verification Auditor for CareerConnect AI.
 Your primary role is to verify the candidate's mandatory LinkedIn profile integrity and ensure the submitted interview rounds are genuine, constructive, and free of spam or malicious content, enabling the community audience to cross-verify the author's company background.
 
-=== CANDIDATE & COMPANY SUBMISSION ===
+=== CANDIDATE & COMPANY SUBMISSION ===                          
 Candidate Name: ${candidate_name || 'Not provided'}
 Candidate LinkedIn Profile URL: ${cleanLinkedIn}
 Claimed Company Name: ${company_name}
