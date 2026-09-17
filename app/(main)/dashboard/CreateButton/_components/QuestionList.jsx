@@ -129,15 +129,14 @@ function QuestionList({ formData, onCreateLink }) {
             });
 
             if (!response.ok) {
-                if (response.status === 429) {
-                    try {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || 'Too many requests. Please try again later.');
-                    } catch (e) {
-                        throw new Error(e.message || 'Rate limit exceeded. Please try again later.');
-                    }
+                let serverMessage = `Server error (${response.status})`;
+                try {
+                    const errorData = await response.json();
+                    serverMessage = errorData.error || errorData.message || serverMessage;
+                } catch (_) {
+                    // body wasn't JSON — keep the default
                 }
-                throw new Error('Failed to start generation');
+                throw new Error(serverMessage);
             }
 
             const reader = response.body.getReader();

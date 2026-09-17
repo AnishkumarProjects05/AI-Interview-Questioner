@@ -2,8 +2,9 @@ import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 import { QUESTION_PROMPT, DISCUSSION_PROMPT, RESUME_QUESTION_PROMPT, RESUME_DISCUSSION_PROMPT } from '@/services/Constant';
 import fs from 'fs';
+import os from 'os';
+import path from 'path';
 
-const logPath = 'e:/ai-interview/aimodel-error.log';
 const DEBATE_ONE = process.env.DEBATE_ONE;
 const DEBATE_TWO = process.env.DEBATE_TWO;
 const DEBATE_THREE = process.env.DEBATE_THREE;
@@ -12,7 +13,7 @@ const LEAD_DEBATE = process.env.LEAD_DEBATE;
 
 const cleanEnvVar = (val) => {
   if (!val) return val;
-  return val.trim().replace(/^['"]|['"]$/g, '').trim();
+  return val.trim().replace(/^['\"]|['\"]$/g, '').trim();
 };
 
 const openRouterApiKey = cleanEnvVar(
@@ -24,13 +25,18 @@ const keyLog = openRouterApiKey
   ? `${openRouterApiKey.substring(0, 8)}...${openRouterApiKey.substring(openRouterApiKey.length - 8)}`
   : 'UNDEFINED';
 
-if (process.env.NODE_ENV === 'development') {
+// Safe cross-platform log helper — writes to system tmp dir, never crashes on Vercel
+const safeLog = (message) => {
+  if (process.env.NODE_ENV !== 'development') return;
   try {
-    fs.appendFileSync(logPath, `[API Route Init] Loaded key: ${keyLog}\n`);
+    const logPath = path.join(os.tmpdir(), 'aimodel-error.log');
+    fs.appendFileSync(logPath, message);
   } catch (e) {
-    console.error("Failed to write initialization log:", e);
+    console.error("Failed to write log:", e);
   }
-}
+};
+
+safeLog(`[API Route Init] Loaded key: ${keyLog}\n`);
 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -64,20 +70,14 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
       return completion.choices[0].message.content;
     } catch (error) {
       // Log to file for visibility in development
-      if (process.env.NODE_ENV === 'development') {
-        try {
-          const errorDetails = `[${new Date().toISOString()}] [${modelName}] ERROR:\n` +
-            `Message: ${error.message}\n` +
-            `Status: ${error.status}\n` +
-            `Code: ${error.code}\n` +
-            `Type: ${error.type}\n` +
-            `Raw: ${JSON.stringify(error, null, 2)}\n` +
-            `ApiKey: ${keyLog}\n\n`;
-          fs.appendFileSync(logPath, errorDetails);
-        } catch (logErr) {
-          console.error("Failed to write error to file log:", logErr);
-        }
-      }
+      const errorDetails = `[${new Date().toISOString()}] [${modelName}] ERROR:\n` +
+        `Message: ${error.message}\n` +
+        `Status: ${error.status}\n` +
+        `Code: ${error.code}\n` +
+        `Type: ${error.type}\n` +
+        `Raw: ${JSON.stringify(error, null, 2)}\n` +
+        `ApiKey: ${keyLog}\n\n`;
+      safeLog(errorDetails);
 
       // 🔴 DETAILED ERROR LOGGING
       console.error(`[${modelName}] ===== FULL ERROR =====`);
