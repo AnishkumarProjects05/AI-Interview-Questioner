@@ -153,7 +153,7 @@ function Provider({ children }) {
 
     return (
         <UserDetailContext.Provider value={{ user, setUser, theme, toggleTheme }}>
-            <div>{children}</div>
+            <div suppressHydrationWarning>{children}</div>
         </UserDetailContext.Provider>
 
     )

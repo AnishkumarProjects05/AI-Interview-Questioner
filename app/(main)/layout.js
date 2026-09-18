@@ -4,10 +4,10 @@ import WelcomeContainer from './dashboard/_components/WelcomeContainer';
 
 function DashboardLayout({ children }) {
   return (
-    <div>
+    <div suppressHydrationWarning>
         <DashboardProvider>
         
-            <div className='p-0 sm:p-6 md:p-10'>
+            <div className='p-0 sm:p-6 md:p-10' suppressHydrationWarning>
              
             
               {children}
