@@ -8,8 +8,8 @@ export const mockProfile: ResumeProfile = {
   location: "San Francisco, CA",
   url: "https://janedoe.dev",
   personalLinks: [
-    { name: "GitHub", url: "https://github.com/janedoe" },
-    { name: "LinkedIn", url: "https://linkedin.com/in/janedoe" }
+    { label: "GitHub", url: "https://github.com/janedoe" },
+    { label: "LinkedIn", url: "https://linkedin.com/in/janedoe" }
   ],
 };
 

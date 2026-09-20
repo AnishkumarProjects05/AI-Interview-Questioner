@@ -39,6 +39,7 @@
   ],
   "exclude": [
     "node_modules",
-    "Folonite-resume"
+    "Folonite-resume",
+    "testing"
   ]
 }
