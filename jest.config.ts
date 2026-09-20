@@ -10,9 +10,27 @@ const createJestConfig = nextJest({
 const config: Config = {
     coverageProvider: 'v8',
     testEnvironment: 'jsdom',
-    // Add more setup options before each test is run
     setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-    modulePathIgnorePatterns: ['<rootDir>/Folonite-resume/'],
+    modulePathIgnorePatterns: [
+        '<rootDir>/Folonite-resume/',
+        '<rootDir>/.next/',
+    ],
+    testPathIgnorePatterns: [
+        '/node_modules/',
+        '/.next/',
+        '<rootDir>/Folonite-resume/',
+        'test-openrouter\\.js$',
+        'test-smtp\\.js$',
+        'test-models\\.js$',
+        'test-json-parsing\\.js$',
+    ],
+    testMatch: [
+        '<rootDir>/testing/**/*.test.[jt]s?(x)',
+        '<rootDir>/**/__tests__/**/*.test.[jt]s?(x)',
+    ],
+    moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/$1',
+    },
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

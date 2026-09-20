@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { escapeHtml, sanitizePromptInput } from '@/lib/sanitizer';
 
 export async function POST(request) {
+  // 1. Verify Server-Side Authentication
+  const { user, error: authError } = await getAuthenticatedUser();
+  if (!user || authError || !user.email) {
+    return NextResponse.json(
+      { error: "Unauthorized: You must be logged in to trigger welcome notifications." },
+      { status: 401 }
+    );
+  }
+
   const mailgunApiKey = process.env.MAILGUN_API_KEY;
   const sandboxDomain = process.env.SANDBOX_DOMAIN;
 
@@ -13,16 +24,13 @@ export async function POST(request) {
   }
 
   try {
-    const { email, name } = await request.json();
+    const body = await request.json().catch(() => ({}));
+    const { name } = body;
 
-    if (!email) {
-      return NextResponse.json(
-        { error: "Email parameter is required." },
-        { status: 400 }
-      );
-    }
-
-    const userName = name || email.split('@')[0];
+    // 2. Anti-Spoofing: Strictly use the authenticated user's email from the session
+    const recipientEmail = user.email;
+    const rawName = name || user.user_metadata?.full_name || recipientEmail.split('@')[0];
+    const safeUserName = escapeHtml(sanitizePromptInput(rawName, 100));
 
     // HTML Email Template
     const htmlContent = `
@@ -135,7 +143,7 @@ export async function POST(request) {
             <div class="logo">CareerConnect <span class="logo-highlight">AI</span></div>
           </div>
           
-          <h1>Welcome to the Future of Interview Prep, ${userName}!</h1>
+          <h1>Welcome to the Future of Interview Prep, ${safeUserName}!</h1>
           
           <p>I am absolutely thrilled to welcome you to CareerConnect AI. This platform is engineered to transform standard interview preparation into a high-stakes, realistic simulation using advanced neural intelligence.</p>
           
@@ -161,7 +169,7 @@ export async function POST(request) {
           </div>
           
           <p style="font-size: 13px; text-align: center; color: #64748b; margin-top: 24px;">
-            Need help? Reach out at <a href="mailto:anishrkumar2k5@gmail.com" style="color: #6366f1; text-decoration: underline;">anishrkumar2k5@gmail.com</a>
+            Need help? Reach out at <a href="mailto:support@careerconnect.ai" style="color: #6366f1; text-decoration: underline;">support@careerconnect.ai</a>
           </p>
           
           <div class="footer">
@@ -179,12 +187,10 @@ export async function POST(request) {
 
     const formData = new URLSearchParams();
     formData.append('from', `CareerConnect AI <postmaster@${sandboxDomain}>`);
-    formData.append('to', email);
+    formData.append('to', recipientEmail);
     formData.append('subject', 'Welcome to CareerConnect AI!');
     formData.append('html', htmlContent);
-    formData.append('text', `Hi ${userName},\n\nWelcome to CareerConnect AI!\n\nAccess your dashboard here: https://career-connect-ai.vercel.app/dashboard\n\nDeveloped by an Undergraduate and Used by Job Seekers, Graduates, Undergraduates.`);
-
-    console.log(`[Mailgun] Attempting to send greeting email to: ${email}`);
+    formData.append('text', `Hi ${safeUserName},\n\nWelcome to CareerConnect AI!\n\nAccess your dashboard here: https://career-connect-ai.vercel.app/dashboard\n\nDeveloped by an Undergraduate and Used by Job Seekers, Graduates, Undergraduates.`);
 
     const res = await fetch(endpoint, {
       method: 'POST',
@@ -195,27 +201,26 @@ export async function POST(request) {
       body: formData.toString()
     });
 
-    const responseData = await res.text();
-
     if (!res.ok) {
-      console.error(`[Mailgun Error] Failed to send email. Status: ${res.status}. Response: ${responseData}`);
+      console.error(`[Mailgun Error] Failed to send email. Status: ${res.status}`);
       return NextResponse.json(
         { 
           success: false, 
-          error: `Mailgun API returned error status ${res.status}`, 
-          details: responseData 
+          error: `Email notification delivery failed.` 
         },
         { status: res.status }
       );
     }
 
-    console.log(`[Mailgun Success] Email sent successfully. Response: ${responseData}`);
     return NextResponse.json({ success: true, message: "Welcome email sent successfully." });
 
   } catch (err) {
-    console.error(`[Mailgun Exception] Exception occurred while sending email:`, err);
+    console.error(`[Mailgun Exception] Exception occurred while sending email:`, err.message);
+    const safeErrorMsg = process.env.NODE_ENV === 'production'
+      ? 'Failed to send welcome email.'
+      : err.message;
     return NextResponse.json(
-      { success: false, error: err.message },
+      { success: false, error: safeErrorMsg },
       { status: 500 }
     );
   }

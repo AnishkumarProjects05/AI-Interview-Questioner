@@ -1,9 +1,8 @@
 import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 import { QUESTION_PROMPT, DISCUSSION_PROMPT, RESUME_QUESTION_PROMPT, RESUME_DISCUSSION_PROMPT } from '@/services/Constant';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { sanitizePromptInput } from '@/lib/sanitizer';
 
 const DEBATE_ONE = process.env.DEBATE_ONE;
 const DEBATE_TWO = process.env.DEBATE_TWO;
@@ -19,24 +18,6 @@ const cleanEnvVar = (val) => {
 const openRouterApiKey = cleanEnvVar(
   process.env.OPEN_ROUTER_API_KEY ?? process.env.OPENROUTER_API_KEY
 );
-
-// Obfuscate key for logging
-const keyLog = openRouterApiKey
-  ? `${openRouterApiKey.substring(0, 8)}...${openRouterApiKey.substring(openRouterApiKey.length - 8)}`
-  : 'UNDEFINED';
-
-// Safe cross-platform log helper — writes to system tmp dir, never crashes on Vercel
-const safeLog = (message) => {
-  if (process.env.NODE_ENV !== 'development') return;
-  try {
-    const logPath = path.join(os.tmpdir(), 'aimodel-error.log');
-    fs.appendFileSync(logPath, message);
-  } catch (e) {
-    console.error("Failed to write log:", e);
-  }
-};
-
-safeLog(`[API Route Init] Loaded key: ${keyLog}\n`);
 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -69,28 +50,11 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
       console.log(`[Panel Discussion] ${modelName} has finished.`);
       return completion.choices[0].message.content;
     } catch (error) {
-      // Log to file for visibility in development
-      const errorDetails = `[${new Date().toISOString()}] [${modelName}] ERROR:\n` +
-        `Message: ${error.message}\n` +
-        `Status: ${error.status}\n` +
-        `Code: ${error.code}\n` +
-        `Type: ${error.type}\n` +
-        `Raw: ${JSON.stringify(error, null, 2)}\n` +
-        `ApiKey: ${keyLog}\n\n`;
-      safeLog(errorDetails);
+      console.error(`[Panel Discussion] ${modelName} encountered an error:`, error.message);
 
-      // 🔴 DETAILED ERROR LOGGING
-      console.error(`[${modelName}] ===== FULL ERROR =====`);
-      console.error(`[${modelName}] Message:`, error.message);
-      console.error(`[${modelName}] Status:`, error.status);
-      console.error(`[${modelName}] Error code:`, error.code);
-      console.error(`[${modelName}] Error type:`, error.type);
-      console.error(`[${modelName}] Raw error:`, JSON.stringify(error, null, 2));
-      console.error(`[${modelName}] =====================`);
-
-      const statusMatch = error.message.match(/\b\d{3}\b/);
+      const statusMatch = error.message?.match(/\b\d{3}\b/);
       const status = statusMatch ? statusMatch[0] : null;
- 
+
       if (retries === 0 || status === '404' || status === '401') {
         console.error(`Final failure for ${modelName}: [${status || 'Error'}] ${error.message}`);
         return null;
@@ -104,28 +68,48 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
 }
 
 export async function POST(request) {
+  // 1. Verify Server-Side Authentication
+  const { user, error: authError } = await getAuthenticatedUser();
+  if (!user || authError) {
+    return NextResponse.json(
+      { error: "Unauthorized: You must be logged in to use the AI interview generator." },
+      { status: 401 }
+    );
+  }
+
+  // 2. Validate API Key configuration
   if (!openRouterApiKey) {
     return NextResponse.json(
-      { error: "OPEN_ROUTER_API_KEY is not set in environment variables." },
+      { error: "AI service is currently unavailable. Missing configuration." },
       { status: 500 }
     );
   }
 
-  const { jobPosition, jobDescription, duration, type, interviewMode, resumeContent } = await request.json();
+  const body = await request.json().catch(() => ({}));
+  const { jobPosition, jobDescription, duration, type, interviewMode, resumeContent } = body;
 
-  const formattedType = Array.isArray(type) ? type.join(', ') : (type ?? '');
+  // 3. Sanitize user inputs and cap lengths to prevent prompt injection and token overflow
+  const safeJobPosition = sanitizePromptInput(jobPosition, 200) || 'Software Professional';
+  const safeJobDescription = sanitizePromptInput(jobDescription, 5000);
+  const safeResumeContent = sanitizePromptInput(resumeContent, 10000);
+  const safeDuration = sanitizePromptInput(String(duration || ''), 50);
+
+  const formattedType = Array.isArray(type)
+    ? type.map(t => sanitizePromptInput(String(t), 50)).filter(Boolean).join(', ')
+    : sanitizePromptInput(String(type ?? ''), 100);
+
   const isResumeMode = interviewMode === 'resume';
 
   const FINAL_PROMPT = isResumeMode
     ? RESUME_QUESTION_PROMPT
-        .replace('{{jobTitle}}', jobPosition ?? 'Software Professional')
-        .replace('{{resumeContent}}', resumeContent ?? jobDescription ?? '')
-        .replace('{{duration}}', duration ?? '')
+        .replace('{{jobTitle}}', safeJobPosition)
+        .replace('{{resumeContent}}', safeResumeContent || safeJobDescription || '')
+        .replace('{{duration}}', safeDuration)
         .replace('{{type}}', formattedType)
     : QUESTION_PROMPT
-        .replace('{{jobTitle}}', jobPosition ?? '')
-        .replace('{{jobDescription}}', jobDescription ?? '')
-        .replace('{{duration}}', duration ?? '')
+        .replace('{{jobTitle}}', safeJobPosition)
+        .replace('{{jobDescription}}', safeJobDescription)
+        .replace('{{duration}}', safeDuration)
         .replace('{{type}}', formattedType);
 
   const encoder = new TextEncoder();
@@ -198,7 +182,10 @@ export async function POST(request) {
 
         controller.close();
       } catch (error) {
-        sendUpdate({ status: 'error', message: error.message });
+        const safeErrorMessage = process.env.NODE_ENV === 'production'
+          ? 'Failed to generate interview questions. Please try again later.'
+          : (error.message || 'An error occurred');
+        sendUpdate({ status: 'error', message: safeErrorMessage });
         controller.close();
       }
     }

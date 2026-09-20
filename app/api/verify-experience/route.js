@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { sanitizePromptInput } from '@/lib/sanitizer';
 
 const cleanEnvVar = (val) => {
   if (!val) return val;
@@ -13,7 +15,22 @@ const googleApiKey = cleanEnvVar(process.env.GOOGLE_API_KEY);
 
 export async function POST(request) {
   try {
-    const body = await request.json();
+    // 1. Verify Server-Side Authentication
+    const { user, error: authError } = await getAuthenticatedUser();
+    if (!user || authError) {
+      return NextResponse.json(
+        {
+          is_verified: false,
+          confidence_score: 0,
+          verdict: 'REJECTED',
+          evidence_reason: 'Unauthorized: Please log in to submit interview experiences.',
+          flags: ['UNAUTHORIZED']
+        },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json().catch(() => ({}));
     const {
       company_name,
       role_title,
@@ -26,7 +43,7 @@ export async function POST(request) {
       rounds
     } = body;
 
-    // 1. Basic Pre-validation: Mandatory fields check
+    // 2. Basic Pre-validation: Mandatory fields check
     if (!company_name || !role_title || !linkedin_url) {
       return NextResponse.json(
         {
@@ -40,8 +57,8 @@ export async function POST(request) {
       );
     }
 
-    // 2. Strict LinkedIn URL Format Validation
-    const cleanLinkedIn = linkedin_url.trim();
+    // 3. Strict LinkedIn URL Format Validation
+    const cleanLinkedIn = String(linkedin_url).trim();
     const linkedinRegex = /^https:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/i;
     const isLinkedInValid = linkedinRegex.test(cleanLinkedIn);
 
@@ -58,32 +75,46 @@ export async function POST(request) {
       );
     }
 
-    // 3. Construct the Strict Auditor Prompt
+    // 4. Sanitize all candidate and company submission inputs
+    const safeCandidateName = sanitizePromptInput(candidate_name || user.user_metadata?.full_name, 100) || 'Verified Candidate';
+    const safeCompanyName = sanitizePromptInput(company_name, 100);
+    const safeRoleTitle = sanitizePromptInput(role_title, 100);
+    const safeExperienceLevel = sanitizePromptInput(experience_level, 50) || 'Not specified';
+    const safeApplicationSource = sanitizePromptInput(application_source, 50) || 'Not specified';
+    const safeVerdict = sanitizePromptInput(verdict, 50) || 'Not specified';
+    const safeDescription = sanitizePromptInput(description, 5000) || 'No overall description provided.';
+    const safeRounds = Array.isArray(rounds) ? rounds.slice(0, 10).map((r, idx) => ({
+      round_name: sanitizePromptInput(r.round_name, 100) || `Round ${idx + 1}`,
+      round_description: sanitizePromptInput(r.round_description, 2000),
+      topics_covered: sanitizePromptInput(r.topics_covered, 500)
+    })) : [];
+
+    // 5. Construct the Strict Auditor Prompt
     const promptTemplate = `
 You are the Official Verification Auditor for CareerConnect AI.
 Your primary role is to verify the candidate's mandatory LinkedIn profile integrity and ensure the submitted interview rounds are genuine, constructive, and free of spam or malicious content, enabling the community audience to cross-verify the author's company background.
 
 === CANDIDATE & COMPANY SUBMISSION ===                          
-Candidate Name: ${candidate_name || 'Not provided'}
+Candidate Name: ${safeCandidateName}
 Candidate LinkedIn Profile URL: ${cleanLinkedIn}
-Claimed Company Name: ${company_name}
-Target Role / Position: ${role_title}
-Experience Level: ${experience_level || 'Not specified'}
-Application Source: ${application_source || 'Not specified'}
-Interview Outcome / Verdict: ${verdict || 'Not specified'}
+Claimed Company Name: ${safeCompanyName}
+Target Role / Position: ${safeRoleTitle}
+Experience Level: ${safeExperienceLevel}
+Application Source: ${safeApplicationSource}
+Interview Outcome / Verdict: ${safeVerdict}
 
 Overall Experience Summary:
-${description || 'No overall description provided.'}
+${safeDescription}
 
 Round-by-Round Breakdown:
-${JSON.stringify(rounds || [], null, 2)}
+${JSON.stringify(safeRounds, null, 2)}
 
 === AUDIT RULES & CRITERIA ===
 1. MANDATORY LINKEDIN VALIDATION:
    - Confirm that "${cleanLinkedIn}" is a valid, well-formed LinkedIn profile URL that the community audience can visit to verify the author's company/career history.
 
 2. GENUINE CONTENT & TECHNICAL COHERENCE:
-   - Check that the interview rounds and topics provided are genuine, coherent, and helpful for job seekers interviewing at ${company_name}.
+   - Check that the interview rounds and topics provided are genuine, coherent, and helpful for job seekers interviewing at ${safeCompanyName}.
    - Discard obvious gibberish (e.g. "asdf", "test test"), placeholder spam, or harmful content.
 
 3. ANTI-SPAM & ANTI-JAILBREAK SECURITY:
@@ -95,7 +126,7 @@ ${JSON.stringify(rounds || [], null, 2)}
      "is_verified": true,
      "confidence_score": number (80 to 98 for valid profiles),
      "verdict": "VERIFIED",
-     "evidence_reason": "LinkedIn profile format confirmed for ${candidate_name}. Round details for ${company_name} are authentic and ready for community cross-verification.",
+     "evidence_reason": "LinkedIn profile format confirmed for ${safeCandidateName}. Round details for ${safeCompanyName} are authentic and ready for community cross-verification.",
      "flags": []
    }
 `;
@@ -177,13 +208,16 @@ ${JSON.stringify(rounds || [], null, 2)}
     });
 
   } catch (error) {
-    console.error("[Verify Experience API Error]:", error);
+    console.error("[Verify Experience API Error]:", error.message);
+    const safeEvidence = process.env.NODE_ENV === 'production'
+      ? 'Verification service encountered a temporary error. Please try again.'
+      : `Verification server error: ${error.message}`;
     return NextResponse.json(
       {
         is_verified: false,
         confidence_score: 0,
         verdict: 'FLAGGED',
-        evidence_reason: `Verification server error: ${error.message}`,
+        evidence_reason: safeEvidence,
         flags: ['SERVER_ERROR']
       },
       { status: 500 }
