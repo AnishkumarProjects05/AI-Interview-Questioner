@@ -11,7 +11,7 @@ const DEBATE_FOUR = process.env.DEBATE_FOUR;
 const LEAD_DEBATE = process.env.LEAD_DEBATE;
 
 const cleanEnvVar = (val) => {
-  if (!val) return val;
+  if (!val) return val;clear
   return val.trim().replace(/^['\"]|['\"]$/g, '').trim();
 };
 
