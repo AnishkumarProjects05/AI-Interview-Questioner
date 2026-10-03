@@ -16,7 +16,7 @@ const cleanEnvVar = (val) => {
 };
 
 const openRouterApiKey = cleanEnvVar(
-  process.env.OPEN_ROUTER_API_KEY ?? process.env.OPENROUTER_API_KEY
+  process.env.OPEN_ROUTER_API_KEY
 );
 
 const openai = new OpenAI({
@@ -37,7 +37,7 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
       const completionPromise = openai.chat.completions.create({
         model: model,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 2000,
+        max_tokens: 800,
         ...(isJson ? { response_format: { type: "json_object" } } : {})
       });
 
@@ -55,7 +55,7 @@ async function getAICompletion(model, prompt, isJson = true, modelName = "Model"
       const statusMatch = error.message?.match(/\b\d{3}\b/);
       const status = statusMatch ? statusMatch[0] : null;
 
-      if (retries === 0 || status === '404' || status === '401') {
+      if (retries === 0 || status === '404' || status === '401' || status === '402') {
         console.error(`Final failure for ${modelName}: [${status || 'Error'}] ${error.message}`);
         return null;
       }
@@ -102,15 +102,15 @@ export async function POST(request) {
 
   const FINAL_PROMPT = isResumeMode
     ? RESUME_QUESTION_PROMPT
-        .replace('{{jobTitle}}', safeJobPosition)
-        .replace('{{resumeContent}}', safeResumeContent || safeJobDescription || '')
-        .replace('{{duration}}', safeDuration)
-        .replace('{{type}}', formattedType)
+      .replace('{{jobTitle}}', safeJobPosition)
+      .replace('{{resumeContent}}', safeResumeContent || safeJobDescription || '')
+      .replace('{{duration}}', safeDuration)
+      .replace('{{type}}', formattedType)
     : QUESTION_PROMPT
-        .replace('{{jobTitle}}', safeJobPosition)
-        .replace('{{jobDescription}}', safeJobDescription)
-        .replace('{{duration}}', safeDuration)
-        .replace('{{type}}', formattedType);
+      .replace('{{jobTitle}}', safeJobPosition)
+      .replace('{{jobDescription}}', safeJobDescription)
+      .replace('{{duration}}', safeDuration)
+      .replace('{{type}}', formattedType);
 
   const encoder = new TextEncoder();
 
@@ -152,23 +152,23 @@ export async function POST(request) {
         // Step 2: Synthesis
         const FINAL_DISCUSSION_PROMPT = isResumeMode
           ? RESUME_DISCUSSION_PROMPT
-              .replace('{{jobTitle}}', jobPosition ?? 'Software Professional')
-              .replace('{{resumeContent}}', resumeContent ?? jobDescription ?? '')
-              .replace('{{duration}}', duration ?? '')
-              .replace('{{type}}', formattedType)
-              .replace('{{proposal1}}', prop1 || "No proposal available")
-              .replace('{{proposal2}}', prop2 || "No proposal available")
-              .replace('{{proposal3}}', prop3 || "No proposal available")
-              .replace('{{proposal4}}', prop4 || "No proposal available")
+            .replace('{{jobTitle}}', jobPosition ?? 'Software Professional')
+            .replace('{{resumeContent}}', resumeContent ?? jobDescription ?? '')
+            .replace('{{duration}}', duration ?? '')
+            .replace('{{type}}', formattedType)
+            .replace('{{proposal1}}', prop1 || "No proposal available")
+            .replace('{{proposal2}}', prop2 || "No proposal available")
+            .replace('{{proposal3}}', prop3 || "No proposal available")
+            .replace('{{proposal4}}', prop4 || "No proposal available")
           : DISCUSSION_PROMPT
-              .replace('{{jobTitle}}', jobPosition ?? '')
-              .replace('{{jobDescription}}', jobDescription ?? '')
-              .replace('{{duration}}', duration ?? '')
-              .replace('{{type}}', formattedType)
-              .replace('{{proposal1}}', prop1 || "No proposal available")
-              .replace('{{proposal2}}', prop2 || "No proposal available")
-              .replace('{{proposal3}}', prop3 || "No proposal available")
-              .replace('{{proposal4}}', prop4 || "No proposal available");
+            .replace('{{jobTitle}}', jobPosition ?? '')
+            .replace('{{jobDescription}}', jobDescription ?? '')
+            .replace('{{duration}}', duration ?? '')
+            .replace('{{type}}', formattedType)
+            .replace('{{proposal1}}', prop1 || "No proposal available")
+            .replace('{{proposal2}}', prop2 || "No proposal available")
+            .replace('{{proposal3}}', prop3 || "No proposal available")
+            .replace('{{proposal4}}', prop4 || "No proposal available");
 
         const synthesisModel = LEAD_DEBATE;
         const finalAnswer = await getAICompletion(synthesisModel, FINAL_DISCUSSION_PROMPT, true, "Lead Debate Model", 60000);
